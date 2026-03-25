@@ -22,7 +22,7 @@ const BRANCH_COLORS = {
   "Baldwin":        { bg: "#FEE2E2", color: "#991B1B", dot: "#EF4444" },
   "Brooklyn":       { bg: "#FDF4FF", color: "#7E22CE", dot: "#A855F7" },
   "New Hyde Park":  { bg: "#FFF7ED", color: "#9A3412", dot: "#F97316" },
-  "Manhattan":      { bg: "#0F172A", color: "#fff",    dot: "#94A3B8" },
+  "Manhattan":      { bg: "#E2E8F0", color: "#1E293B", dot: "#475569" },
   "Stamford":       { bg: "#CCFBF1", color: "#115E59", dot: "#14B8A6" },
   "Milford":        { bg: "#FEF9C3", color: "#713F12", dot: "#EAB308" },
   "Hartford":       { bg: "#FCE7F3", color: "#9D174D", dot: "#EC4899" },
