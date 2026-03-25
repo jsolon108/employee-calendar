@@ -333,13 +333,21 @@ function CalendarView({ events, onSelectEvent, branch }) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
             {monthCells.map((cell, i) => (
-              <div key={i} style={{ minHeight: 100, background: cell === null ? "transparent" : cell.isToday ? "#F0F7FF" : "#FAFBFC", borderRadius: 8, border: cell === null ? "none" : cell.isToday ? "2px solid #3B82F6" : "1.5px solid #E2E8F0", padding: cell === null ? 0 : "6px 5px", boxSizing: "border-box" }}>
+              <div key={i} style={{ height: 130, background: cell === null ? "transparent" : cell.isToday ? "#F0F7FF" : "#FAFBFC", borderRadius: 8, border: cell === null ? "none" : cell.isToday ? "2px solid #3B82F6" : "1.5px solid #E2E8F0", padding: cell === null ? 0 : "6px 5px", boxSizing: "border-box", overflow: "hidden", position: "relative" }}>
                 {cell !== null && (
                   <>
                     <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
                       <span style={{ width: 22, height: 22, borderRadius: "50%", background: cell.isToday ? "#3B82F6" : "transparent", color: cell.isToday ? "#fff" : "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: cell.isToday ? 800 : 500 }}>{cell.dayNum}</span>
                     </div>
-                    {cell.events.map(ev => <EventChip key={ev.id + cell.dateStr} ev={ev} />)}
+                    {cell.events.slice(0, 3).map(ev => <EventChip key={ev.id + cell.dateStr} ev={ev} />)}
+{cell.events.length > 3 && (
+  <div style={{ fontSize: 9, color: "#94A3B8", fontWeight: 600, textAlign: "center", marginTop: 2 }}>+{cell.events.length - 3} more</div>
+)}
+                    {cell.events.length > 3 && (
+  <div style={{ fontSize: 9, color: "#94A3B8", fontWeight: 600, textAlign: "center", marginTop: 2 }}>
+    +{cell.events.length - 3} more
+  </div>
+)}
                   </>
                 )}
               </div>
