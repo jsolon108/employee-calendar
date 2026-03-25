@@ -175,15 +175,28 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
           {/* Date Range */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div>
-              <label style={labelStyle}>Start Date{req}</label>
-              <input type="date" value={form.startDate} onChange={e => set("startDate", e.target.value)} style={borderErr("startDate")} />
-              {errors.startDate && <div style={errStyle}>⚠ {errors.startDate}</div>}
-            </div>
-            <div>
-              <label style={labelStyle}>End Date{req}</label>
-              <input type="date" value={form.endDate} onChange={e => set("endDate", e.target.value)} style={borderErr("endDate")} />
-              {errors.endDate && <div style={errStyle}>⚠ {errors.endDate}</div>}
-            </div>
+  <label style={labelStyle}>Date Range{req}</label>
+  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <input
+      type="date"
+      value={form.startDate}
+      onChange={e => set("startDate", e.target.value)}
+      style={{ ...borderErr("startDate"), flex: 1 }}
+    />
+    <span style={{ color: "#94A3B8", fontWeight: 600, fontSize: 13 }}>→</span>
+    <input
+      type="date"
+      value={form.endDate}
+      onChange={e => {
+        set("endDate", e.target.value);
+        if (!form.startDate) set("startDate", e.target.value);
+      }}
+      style={{ ...borderErr("endDate"), flex: 1 }}
+    />
+  </div>
+  {errors.startDate && <div style={errStyle}>⚠ {errors.startDate}</div>}
+  {errors.endDate && <div style={errStyle}>⚠ {errors.endDate}</div>}
+</div>
           </div>
 
           {/* Notes */}
