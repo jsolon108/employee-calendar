@@ -28,14 +28,16 @@ const BRANCH_COLORS = {
   "Hartford":       { bg: "#E0E7FF", color: "#3730A3", dot: "#6366F1" },
 };
 
-const EVENT_TYPES = ["Out of Office", "Half Day", "Company Event", "Branch Event", "Holiday"];
+const EVENT_TYPES = ["Out of Office", "Half Day", "Coming in Late", "Leaving Early", "Company Event", "Branch Event", "Holiday"];
 
 const EVENT_TYPE_CONFIG = {
-  "Out of Office":  { bg: "#FEE2E2", color: "#991B1B" },
-  "Half Day":       { bg: "#FEF3C7", color: "#92400E" },
-  "Company Event":  { bg: "#0F172A", color: "#fff" },
-  "Branch Event":   { bg: "#0369A1", color: "#fff" },
-  "Holiday":        { bg: "#1E3A5F", color: "#fff" },
+  "Out of Office":   { bg: "#FEE2E2", color: "#991B1B" },
+  "Half Day":        { bg: "#FEF3C7", color: "#92400E" },
+  "Coming in Late":  { bg: "#FEF3C7", color: "#92400E" },
+  "Leaving Early":   { bg: "#FEF3C7", color: "#92400E" },
+  "Company Event":   { bg: "#0F172A", color: "#fff" },
+  "Branch Event":    { bg: "#0369A1", color: "#fff" },
+  "Holiday":         { bg: "#1E3A5F", color: "#fff" },
 };
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -184,7 +186,7 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
 
           {/* Notes */}
           <div>
-            <label style={labelStyle}>Notes</label>
+            <label style={labelStyle}>Notes / Time of Arrival or Departure</label>
             <textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={3} placeholder="Any additional notes..." style={{ ...inputStyle, resize: "vertical" }} />
           </div>
         </div>
