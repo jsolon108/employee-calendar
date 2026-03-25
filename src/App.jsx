@@ -57,6 +57,7 @@ function LoginScreen({ onMicrosoftLogin, onLogin }) {
   const [localPass, setLocalPass] = useState("");
   const [localError, setLocalError] = useState("");
 
+
   const LOCAL_ADMIN = { username: "admin", password: "Johnstone2024!" };
 
   const handleLocalLogin = () => {
@@ -340,16 +341,28 @@ function CalendarView({ events, onSelectEvent, branch }) {
                       <span style={{ width: 22, height: 22, borderRadius: "50%", background: cell.isToday ? "#3B82F6" : "transparent", color: cell.isToday ? "#fff" : "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: cell.isToday ? 800 : 500 }}>{cell.dayNum}</span>
                     </div>
                     {cell.events.slice(0, 6).map(ev => <EventChip key={ev.id + cell.dateStr} ev={ev} />)}
-{cell.events.length > 6 && (
-  <div style={{ fontSize: 9, color: "#94A3B8", fontWeight: 600, textAlign: "center", marginTop: 2 }}>+{cell.events.length - 3} more</div>
-)}
                     {cell.events.length > 6 && (
-  <div style={{ fontSize: 9, color: "#94A3B8", fontWeight: 600, textAlign: "center", marginTop: 2 }}>
-    +{cell.events.length - 3} more
+  <div
+    onClick={() => setExpandedDay(cell.dateStr)}
+    style={{ fontSize: 9, color: "#6366F1", fontWeight: 600, textAlign: "center", marginTop: 2, cursor: "pointer" }}
+  >
+     +{cell.events.length - 6} more
   </div>
 )}
-                  </>
+                    </>
                 )}
+      {expandedDay && (
+        <div onClick={() => setExpandedDay(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 12, padding: 20, minWidth: 280, maxWidth: 360, maxHeight: "80vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>{expandedDay}</div>
+            {(() => {
+              const dayCell = monthCells.find(c => c.dateStr === expandedDay);
+              return dayCell?.events.map(ev => <EventChip key={ev.id + expandedDay} ev={ev} />);
+            })()}
+            <div onClick={() => setExpandedDay(null)} style={{ marginTop: 14, textAlign: "center", fontSize: 12, color: "#94A3B8", cursor: "pointer" }}>Close</div>
+          </div>
+        </div>
+      )}
               </div>
             ))}
           </div>
@@ -445,6 +458,7 @@ export default function App() {
   const [adding, setAdding] = useState(false);
   const [viewing, setViewing] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [expandedDay, setExpandedDay] = useState(null);
 
   const { instance } = useMsal();
 
