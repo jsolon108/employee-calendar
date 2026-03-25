@@ -28,12 +28,13 @@ const BRANCH_COLORS = {
   "Hartford":       { bg: "#E0E7FF", color: "#3730A3", dot: "#6366F1" },
 };
 
-const EVENT_TYPES = ["Out of Office", "Half Day", "Company Event", "Holiday"];
+const EVENT_TYPES = ["Out of Office", "Half Day", "Company Event", "Branch Event", "Holiday"];
 
 const EVENT_TYPE_CONFIG = {
   "Out of Office":  { bg: "#FEE2E2", color: "#991B1B" },
   "Half Day":       { bg: "#FEF3C7", color: "#92400E" },
   "Company Event":  { bg: "#0F172A", color: "#fff" },
+  "Branch Event":   { bg: "#0369A1", color: "#fff" },
   "Holiday":        { bg: "#1E3A5F", color: "#fff" },
 };
 
@@ -278,7 +279,8 @@ function CalendarView({ events, onSelectEvent, branch }) {
   const EventChip = ({ ev }) => {
     const branchCfg = BRANCH_COLORS[ev.branch] || { bg: "#F1F5F9", color: "#475569" };
     const isCompanyWide = ev.eventType === "Company Event" || ev.eventType === "Holiday";
-    const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
+    const isBranchEvent = ev.eventType === "Branch Event";
+    const cfg = (isCompanyWide || isBranchEvent) ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
     return (
       <button onClick={() => onSelectEvent(ev)} style={{
         display: "block", width: "100%", textAlign: "left",
@@ -289,9 +291,9 @@ function CalendarView({ events, onSelectEvent, branch }) {
         lineHeight: 1.4, overflow: "hidden", marginBottom: 2,
       }}>
         <div style={{ fontSize: 10, fontWeight: 700, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
-          {isCompanyWide ? `📅 ${ev.eventType}` : `👤 ${ev.employeeName}`}
+          {isCompanyWide ? `📅 ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
         </div>
-        {!isCompanyWide && <div style={{ fontSize: 9, opacity: 0.8 }}>{ev.eventType}</div>}
+        <div style={{ fontSize: 9, opacity: 0.8, marginTop: 1 }}>{ev.eventType}</div>
       </button>
     );
   };
