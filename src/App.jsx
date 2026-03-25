@@ -282,7 +282,7 @@ function CalendarView({ events, onSelectEvent, branch }) {
     const branchCfg = BRANCH_COLORS[ev.branch] || { bg: "#F1F5F9", color: "#475569" };
     const isCompanyWide = ev.eventType === "Company Event" || ev.eventType === "Holiday";
     const isBranchEvent = ev.eventType === "Branch Event";
-    const cfg = (isCompanyWide || isBranchEvent) ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
+    const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
     return (
       <button onClick={() => onSelectEvent(ev)} style={{
         display: "block", width: "100%", textAlign: "left",
