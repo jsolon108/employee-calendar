@@ -353,9 +353,11 @@ function CalendarView({ events, onSelectEvent, branch }) {
                     </>
                 )}
       {expandedDay && (
-        <div onClick={() => setExpandedDay(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div onClick={() => setExpandedDay(null)} style={{ position: "fixed", inset: 0, background: "rgba(255,255,255,0.5)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 12, padding: 20, minWidth: 280, maxWidth: 360, maxHeight: "80vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>{expandedDay}</div>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>
+  {new Date(expandedDay + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+</div>
             {(() => {
               const dayCell = monthCells.find(c => c.dateStr === expandedDay);
               return dayCell?.events.map(ev => <EventChip key={ev.id + expandedDay} ev={ev} />);
