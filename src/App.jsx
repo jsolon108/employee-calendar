@@ -333,7 +333,7 @@ function CalendarView({ events, onSelectEvent, branch }) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
             {monthCells.map((cell, i) => (
-              <div key={i} style={{ height: 200, background: cell === null ? "transparent" : cell.isToday ? "#F0F7FF" : "#FAFBFC", borderRadius: 8, border: cell === null ? "none" : cell.isToday ? "2px solid #3B82F6" : "1.5px solid #E2E8F0", padding: cell === null ? 0 : "6px 5px", boxSizing: "border-box", overflow: "hidden", position: "relative" }}>
+              <div key={i} style={{ minHeight: 200, background: cell === null ? "transparent" : cell.isToday ? "#F0F7FF" : "#FAFBFC", borderRadius: 8, border: cell === null ? "none" : cell.isToday ? "2px solid #3B82F6" : "1.5px solid #E2E8F0", padding: cell === null ? 0 : "6px 5px", boxSizing: "border-box", overflow: "hidden", position: "relative" }}>
                 {cell !== null && (
                   <>
                     <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
