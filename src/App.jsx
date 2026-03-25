@@ -252,6 +252,7 @@ function CalendarView({ events, onSelectEvent, branch }) {
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [calMode, setCalMode] = useState("month");
   const [weekOffset, setWeekOffset] = useState(0);
+  const [expandedDay, setExpandedDay] = useState(null);
 
   const firstDay = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
@@ -458,7 +459,6 @@ export default function App() {
   const [adding, setAdding] = useState(false);
   const [viewing, setViewing] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [expandedDay, setExpandedDay] = useState(null);
 
   const { instance } = useMsal();
 
