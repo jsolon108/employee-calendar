@@ -279,7 +279,7 @@ function CalendarView({ events, onSelectEvent, branch }) {
   const eventsForDate = (dateStr) => {
     const filtered = events.filter(ev => ev.startDate <= dateStr && ev.endDate >= dateStr);
     return filtered.sort((a, b) => {
-      const order = { "Company Event": 0, "Branch Event": 1 };
+      const order = { "Company Event": 0, "Training": 1, "Branch Event": 2 };
       const aOrder = order[a.eventType] ?? 2;
       const bOrder = order[b.eventType] ?? 2;
       if (aOrder !== bOrder) return aOrder - bOrder;
