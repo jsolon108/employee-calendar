@@ -282,11 +282,13 @@ function CalendarView({ events, onSelectEvent, branch }) {
       const aOrder = order[a.eventType] ?? 2;
       const bOrder = order[b.eventType] ?? 2;
       if (aOrder !== bOrder) return aOrder - bOrder;
-      // Both are people — sort alphabetically by last name
-      const lastName = name => name.trim().split(" ").slice(-1)[0].toLowerCase();
-      return lastName(a.employeeName).localeCompare(lastName(b.employeeName));
+      const firstName = name => name.trim().split(" ")[0].toLowerCase();
+      return firstName(a.employeeName).localeCompare(firstName(b.employeeName));
     });
   };
+
+  const prevMonth = () => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); };
+  const nextMonth = () => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); };
   const EventChip = ({ ev }) => {
     const branchCfg = BRANCH_COLORS[ev.branch] || { bg: "#F1F5F9", color: "#475569" };
     const isCompanyWide = ev.eventType === "Company Event" || ev.eventType === "Holiday";
