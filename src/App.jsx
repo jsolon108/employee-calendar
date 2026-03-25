@@ -18,23 +18,24 @@ const BRANCHES = [
 
 const BRANCH_COLORS = {
   "Farmingdale":    { bg: "#DBEAFE", color: "#1D4ED8", dot: "#3B82F6" },
-  "Bohemia":        { bg: "#FCE7F3", color: "#9D174D", dot: "#EC4899" },
-  "Baldwin":        { bg: "#FEF3C7", color: "#92400E", dot: "#F59E0B" },
-  "Brooklyn":       { bg: "#DCFCE7", color: "#166534", dot: "#22C55E" },
-  "New Hyde Park":  { bg: "#FEE2E2", color: "#991B1B", dot: "#EF4444" },
-  "Manhattan":      { bg: "#CCFBF1", color: "#115E59", dot: "#14B8A6" },
-  "Stamford":       { bg: "#FEF9C3", color: "#713F12", dot: "#EAB308" },
-  "Milford":        { bg: "#FFE4E6", color: "#9F1239", dot: "#FB7185" },
-  "Hartford":       { bg: "#E0E7FF", color: "#3730A3", dot: "#6366F1" },
+  "Bohemia":        { bg: "#DCFCE7", color: "#166534", dot: "#22C55E" },
+  "Baldwin":        { bg: "#FEE2E2", color: "#991B1B", dot: "#EF4444" },
+  "Brooklyn":       { bg: "#FDF4FF", color: "#7E22CE", dot: "#A855F7" },
+  "New Hyde Park":  { bg: "#FFF7ED", color: "#9A3412", dot: "#F97316" },
+  "Manhattan":      { bg: "#0F172A", color: "#fff",    dot: "#94A3B8" },
+  "Stamford":       { bg: "#CCFBF1", color: "#115E59", dot: "#14B8A6" },
+  "Milford":        { bg: "#FEF9C3", color: "#713F12", dot: "#EAB308" },
+  "Hartford":       { bg: "#FCE7F3", color: "#9D174D", dot: "#EC4899" },
 };
 
-const EVENT_TYPES = ["Out of Office", "Half Day", "Coming in Late", "Leaving Early", "Company Event", "Branch Event", "Holiday"];
+const EVENT_TYPES = ["Out of Office", "Half Day", "Coming in Late", "Leaving Early", "Training", "Company Event", "Branch Event", "Holiday"];
 
 const EVENT_TYPE_CONFIG = {
   "Out of Office":   { bg: "#FEE2E2", color: "#991B1B" },
   "Half Day":        { bg: "#FEF3C7", color: "#92400E" },
   "Coming in Late":  { bg: "#FEF3C7", color: "#92400E" },
   "Leaving Early":   { bg: "#FEF3C7", color: "#92400E" },
+  "Training":        { bg: "#EDE9FE", color: "#5B21B6" },
   "Company Event":   { bg: "#0F172A", color: "#fff" },
   "Branch Event":    { bg: "#0369A1", color: "#fff" },
   "Holiday":         { bg: "#1E3A5F", color: "#fff" },
@@ -150,7 +151,7 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
 
           {/* Employee Name */}
           <div>
-            <label style={labelStyle}>Employee Name{req}</label>
+            <label style={labelStyle}>Employee Name / Event Name{req}</label>
             <input value={form.employeeName} onChange={e => set("employeeName", e.target.value)} placeholder="e.g. John Smith" style={borderErr("employeeName")} />
             {errors.employeeName && <div style={errStyle}>⚠ {errors.employeeName}</div>}
           </div>
@@ -289,11 +290,12 @@ function CalendarView({ events, onSelectEvent, branch }) {
 
   const prevMonth = () => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); };
   const nextMonth = () => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); };
-  const EventChip = ({ ev }) => {
+  cconst EventChip = ({ ev }) => {
     const branchCfg = BRANCH_COLORS[ev.branch] || { bg: "#F1F5F9", color: "#475569" };
     const isCompanyWide = ev.eventType === "Company Event" || ev.eventType === "Holiday";
     const isBranchEvent = ev.eventType === "Branch Event";
-    const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
+    const isTraining = ev.eventType === "Training";
+    const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : isTraining ? EVENT_TYPE_CONFIG["Training"] : branchCfg;
     return (
       <button onClick={() => onSelectEvent(ev)} style={{
         display: "block", width: "100%", textAlign: "left",
@@ -304,9 +306,11 @@ function CalendarView({ events, onSelectEvent, branch }) {
         lineHeight: 1.4, overflow: "hidden", marginBottom: 2,
       }}>
         <div style={{ fontSize: 10, fontWeight: 700, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
-          {isCompanyWide ? `📅 ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : `👤 ${ev.employeeName}`}
+          {isCompanyWide ? `📅 ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : isTraining ? `🎓 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
         </div>
-        <div style={{ fontSize: 9, opacity: 0.8, marginTop: 1 }}>{ev.eventType}</div>
+        <div style={{ fontSize: 9, opacity: 0.75, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
+          {isTraining ? `${ev.branch} — Training` : isCompanyWide ? ev.eventType : isBranchEvent ? "Branch Event" : ev.eventType}
+        </div>
       </button>
     );
   };
