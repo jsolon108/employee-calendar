@@ -48,7 +48,7 @@ function formatDate(d) {
 }
 
 // ─── Login Screen ─────────────────────────────────────────────────────────────
-function LoginScreen({ onMicrosoftLogin }) {
+function LoginScreen({ onMicrosoftLogin, onLogin }) {
   const [showLocal, setShowLocal] = useState(false);
   const [localUser, setLocalUser] = useState("");
   const [localPass, setLocalPass] = useState("");
@@ -56,7 +56,7 @@ function LoginScreen({ onMicrosoftLogin }) {
 
   const LOCAL_ADMIN = { username: "admin", password: "Johnstone2024!" };
 
-  const handleLocalLogin = (onLogin) => {
+  const handleLocalLogin = () => {
     if (localUser === LOCAL_ADMIN.username && localPass === LOCAL_ADMIN.password) {
       onLogin({ id: 0, name: "Admin", email: "admin@local", role: "editor", branch: null, avatar: "AD" });
     } else {
