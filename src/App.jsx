@@ -5,27 +5,27 @@ import { loginRequest, EDITOR_GROUP_ID } from "./authConfig";
 
 const BRANCHES = [
   "All Branches",
-  "Farmingdale",
-  "Bohemia",
   "Baldwin",
+  "Bohemia",
   "Brooklyn",
-  "New Hyde Park",
-  "Manhattan",
-  "Stamford",
-  "Milford",
+  "Farmingdale",
   "Hartford",
+  "Manhattan",
+  "Milford",
+  "New Hyde Park",
+  "Stamford",
 ];
 
 const BRANCH_COLORS = {
-  "Farmingdale":    { bg: "#DBEAFE", color: "#1D4ED8", dot: "#3B82F6" },
-  "Bohemia":        { bg: "#DCFCE7", color: "#166534", dot: "#22C55E" },
   "Baldwin":        { bg: "#FEE2E2", color: "#991B1B", dot: "#EF4444" },
+  "Bohemia":        { bg: "#DCFCE7", color: "#166534", dot: "#22C55E" },
   "Brooklyn":       { bg: "#FDF4FF", color: "#7E22CE", dot: "#A855F7" },
-  "New Hyde Park":  { bg: "#FFF7ED", color: "#9A3412", dot: "#F97316" },
-  "Manhattan":      { bg: "#E2E8F0", color: "#1E293B", dot: "#475569" },
-  "Stamford":       { bg: "#CCFBF1", color: "#115E59", dot: "#14B8A6" },
-  "Milford":        { bg: "#FEF9C3", color: "#713F12", dot: "#EAB308" },
+  "Farmingdale":    { bg: "#DBEAFE", color: "#1D4ED8", dot: "#3B82F6" },
   "Hartford":       { bg: "#FCE7F3", color: "#9D174D", dot: "#EC4899" },
+  "Manhattan":      { bg: "#E2E8F0", color: "#1E293B", dot: "#475569" },
+  "Milford":        { bg: "#FEF9C3", color: "#713F12", dot: "#EAB308" },
+  "New Hyde Park":  { bg: "#FFF7ED", color: "#9A3412", dot: "#F97316" },
+  "Stamford":       { bg: "#CCFBF1", color: "#115E59", dot: "#14B8A6" },
 };
 
 const EVENT_TYPES = ["Out of Office", "Half Day", "Coming in Late", "Leaving Early", "Training", "Counter Day", "Company Event", "Branch Event", "Holiday"];
