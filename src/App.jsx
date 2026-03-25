@@ -505,6 +505,25 @@ export default function App() {
           role: isEditor ? "editor" : "viewer",
           avatar: result.account.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase(),
         });
+      } else {
+        // Check for existing session on refresh
+        const accounts = instance.getAllAccounts();
+        if (accounts.length > 0) {
+          const account = accounts[0];
+          instance.acquireTokenSilent({ account, scopes: [] }).then(silentResult => {
+            const groups = silentResult.idTokenClaims?.groups || [];
+            const isEditor = groups.includes(EDITOR_GROUP_ID);
+            setCurrentUser({
+              id: account.localAccountId,
+              name: account.name,
+              email: account.username,
+              role: isEditor ? "editor" : "viewer",
+              avatar: account.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase(),
+            });
+          }).catch(() => {
+            // Silent token failed, user needs to log in again
+          });
+        }
       }
     }).catch(e => console.error(e));
   }, [instance]);
