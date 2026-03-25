@@ -393,7 +393,40 @@ function CalendarView({ events, onSelectEvent, branch }) {
     </div>
   );
 }
+function getUSHolidays(year) {
+  // Fixed holidays
+  const fixed = [
+    { name: "New Year's Day",  date: `${year}-01-01` },
+    { name: "Independence Day", date: `${year}-07-04` },
+    { name: "Christmas Day",   date: `${year}-12-25` },
+  ];
 
+  // Memorial Day — last Monday in May
+  const may = new Date(year, 4, 31);
+  while (may.getDay() !== 1) may.setDate(may.getDate() - 1);
+  fixed.push({ name: "Memorial Day", date: may.toISOString().slice(0, 10) });
+
+  // Labor Day — first Monday in September
+  const sep = new Date(year, 8, 1);
+  while (sep.getDay() !== 1) sep.setDate(sep.getDate() + 1);
+  fixed.push({ name: "Labor Day", date: sep.toISOString().slice(0, 10) });
+
+  // Thanksgiving — fourth Thursday in November
+  const nov = new Date(year, 10, 1);
+  while (nov.getDay() !== 4) nov.setDate(nov.getDate() + 1);
+  nov.setDate(nov.getDate() + 21);
+  fixed.push({ name: "Thanksgiving Day", date: nov.toISOString().slice(0, 10) });
+
+  return fixed.map((h, i) => ({
+    id: `HOLIDAY-${year}-${i}`,
+    employeeName: h.name,
+    branch: "All Branches",
+    eventType: "Holiday",
+    startDate: h.date,
+    endDate: h.date,
+    notes: "",
+  }));
+}
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -448,10 +481,13 @@ export default function App() {
     catch (e) { console.error(e); }
   };
 
-  const filteredEvents = useMemo(() =>
-    branch === "All Branches" ? events : events.filter(e => e.branch === branch || e.eventType === "Company Event" || e.eventType === "Holiday"),
-    [events, branch]
-  );
+   const filteredEvents = useMemo(() => {
+    const today = new Date();
+    const years = [today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1];
+    const holidays = years.flatMap(y => getUSHolidays(y));
+    const allEvents = [...events, ...holidays];
+    return branch === "All Branches" ? allEvents : allEvents.filter(e => e.branch === branch || e.eventType === "Company Event" || e.eventType === "Holiday");
+  }, [events, branch]);
 
   const handleSave = async (form) => {
     if (adding) {
