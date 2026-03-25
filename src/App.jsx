@@ -291,7 +291,7 @@ function CalendarView({ events, onSelectEvent, branch }) {
         lineHeight: 1.4, overflow: "hidden", marginBottom: 2,
       }}>
         <div style={{ fontSize: 10, fontWeight: 700, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
-          {isCompanyWide ? `📅 ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
+          {isCompanyWide ? `📅 ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : `👤 ${ev.employeeName}`}
         </div>
         <div style={{ fontSize: 9, opacity: 0.8, marginTop: 1 }}>{ev.eventType}</div>
       </button>
