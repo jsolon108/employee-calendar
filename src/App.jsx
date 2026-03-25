@@ -28,7 +28,7 @@ const BRANCH_COLORS = {
   "Hartford":       { bg: "#FCE7F3", color: "#9D174D", dot: "#EC4899" },
 };
 
-const EVENT_TYPES = ["Out of Office", "Half Day", "Coming in Late", "Leaving Early", "Training", "Company Event", "Branch Event", "Holiday"];
+const EVENT_TYPES = ["Out of Office", "Half Day", "Coming in Late", "Leaving Early", "Training", "Counter Day", "Company Event", "Branch Event", "Holiday"];
 
 const EVENT_TYPE_CONFIG = {
   "Out of Office":   { bg: "#FEE2E2", color: "#991B1B" },
@@ -279,7 +279,7 @@ function CalendarView({ events, onSelectEvent, branch }) {
   const eventsForDate = (dateStr) => {
     const filtered = events.filter(ev => ev.startDate <= dateStr && ev.endDate >= dateStr);
     return filtered.sort((a, b) => {
-      const order = { "Company Event": 0, "Training": 1, "Branch Event": 2 };
+      const order = { "Company Event": 0, "Training": 1, "Counter Day": 2, "Branch Event": 3 };
       const aOrder = order[a.eventType] ?? 2;
       const bOrder = order[b.eventType] ?? 2;
       if (aOrder !== bOrder) return aOrder - bOrder;
@@ -295,7 +295,8 @@ function CalendarView({ events, onSelectEvent, branch }) {
     const isCompanyWide = ev.eventType === "Company Event" || ev.eventType === "Holiday";
     const isBranchEvent = ev.eventType === "Branch Event";
     const isTraining = ev.eventType === "Training";
-    const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : isTraining ? EVENT_TYPE_CONFIG["Training"] : branchCfg;
+const isCounterDay = ev.eventType === "Counter Day";
+const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
     return (
       <button onClick={() => onSelectEvent(ev)} style={{
         display: "block", width: "100%", textAlign: "left",
@@ -306,10 +307,10 @@ function CalendarView({ events, onSelectEvent, branch }) {
         lineHeight: 1.4, overflow: "hidden", marginBottom: 2,
       }}>
         <div style={{ fontSize: 10, fontWeight: 700, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
-          {isCompanyWide ? `📅 ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : isTraining ? `🎓 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
+         {isCompanyWide ? `📅 ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : isTraining ? `🎓 ${ev.employeeName}` : isCounterDay ? `🏪 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
         </div>
         <div style={{ fontSize: 9, opacity: 0.75, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
-          {isTraining ? `${ev.branch} — Training` : isCompanyWide ? ev.eventType : isBranchEvent ? "Branch Event" : ev.eventType}
+          {isTraining ? `${ev.branch} — Training` : isCounterDay ? `${ev.branch} — Counter Day` : isCompanyWide ? ev.eventType : isBranchEvent ? "Branch Event" : ev.eventType}
         </div>
       </button>
     );
