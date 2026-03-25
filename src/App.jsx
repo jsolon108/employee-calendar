@@ -275,11 +275,18 @@ function CalendarView({ events, onSelectEvent, branch }) {
   const toDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
   // Get events that span a given date
-  const eventsForDate = (dateStr) => events.filter(ev => ev.startDate <= dateStr && ev.endDate >= dateStr);
-
-  const prevMonth = () => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); };
-  const nextMonth = () => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); };
-
+  const eventsForDate = (dateStr) => {
+    const filtered = events.filter(ev => ev.startDate <= dateStr && ev.endDate >= dateStr);
+    return filtered.sort((a, b) => {
+      const order = { "Company Event": 0, "Branch Event": 1 };
+      const aOrder = order[a.eventType] ?? 2;
+      const bOrder = order[b.eventType] ?? 2;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      // Both are people — sort alphabetically by last name
+      const lastName = name => name.trim().split(" ").slice(-1)[0].toLowerCase();
+      return lastName(a.employeeName).localeCompare(lastName(b.employeeName));
+    });
+  };
   const EventChip = ({ ev }) => {
     const branchCfg = BRANCH_COLORS[ev.branch] || { bg: "#F1F5F9", color: "#475569" };
     const isCompanyWide = ev.eventType === "Company Event" || ev.eventType === "Holiday";
