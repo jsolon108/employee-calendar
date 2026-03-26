@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect } from "react";
 import { supabase } from "./supabase";
 import { useMsal } from "@azure/msal-react";
 import { loginRequest, EDITOR_GROUP_ID } from "./authConfig";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const BRANCHES = [
   "All Branches",
@@ -173,30 +175,24 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
           </div>
 
           {/* Date Range */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-            <div>
-  <label style={labelStyle}>Date Range{req}</label>
-  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-    <input
-      type="date"
-      value={form.startDate}
-      onChange={e => set("startDate", e.target.value)}
-      style={{ ...borderErr("startDate"), flex: 1 }}
-    />
-    <span style={{ color: "#94A3B8", fontWeight: 600, fontSize: 13 }}>→</span>
-    <input
-      type="date"
-      value={form.endDate}
-      onChange={e => {
-        set("endDate", e.target.value);
-        if (!form.startDate) set("startDate", e.target.value);
-      }}
-      style={{ ...borderErr("endDate"), flex: 1 }}
-    />
-  </div>
-  {errors.startDate && <div style={errStyle}>⚠ {errors.startDate}</div>}
-  {errors.endDate && <div style={errStyle}>⚠ {errors.endDate}</div>}
-</div>
+          <div>
+            <label style={labelStyle}>Date Range{req}</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <DatePicker
+                selectsRange
+                startDate={form.startDate ? new Date(form.startDate + "T12:00:00") : null}
+                endDate={form.endDate ? new Date(form.endDate + "T12:00:00") : null}
+                onChange={([start, end]) => {
+                  set("startDate", start ? start.toISOString().split("T")[0] : "");
+                  set("endDate", end ? end.toISOString().split("T")[0] : "");
+                }}
+                placeholderText="Select date range"
+                wrapperClassName="date-range-wrapper"
+                className="date-range-input"
+              />
+            </div>
+            {errors.startDate && <div style={errStyle}>⚠ {errors.startDate}</div>}
+            {errors.endDate && <div style={errStyle}>⚠ {errors.endDate}</div>}
           </div>
 
           {/* Notes */}
