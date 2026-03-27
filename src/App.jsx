@@ -330,7 +330,7 @@ const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
          {isCompanyWide ? `📅 ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : isTraining ? `🎓 ${ev.employeeName}` : isCounterDay ? `🏪 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
         </div>
         <div style={{ fontSize: 9, opacity: 0.75, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
-          {isTraining ? `${ev.branch} — Training` : isCounterDay ? `${ev.branch} — Counter Day` : isCompanyWide ? ev.eventType : isBranchEvent ? "Branch Event" : ev.eventType}
+        {ev.noTimeOff ? "🚫 No time off requests" : isTraining ? `${ev.branch} — Training` : isCounterDay ? `${ev.branch} — Counter Day` : isCompanyWide ? ev.eventType : isBranchEvent ? "Branch Event" : ev.eventType}
         </div>
       </button>
     );
