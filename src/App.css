@@ -182,3 +182,5 @@
     border-right-color: var(--border);
   }
 }
+.date-range-wrapper { width: 100%; }
+.date-range-input { width: 100%; padding: 8px 12px; border: 1.5px solid #E2E8F0; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; }

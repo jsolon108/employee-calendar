@@ -200,6 +200,17 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
             <label style={labelStyle}>Notes / Time of Arrival or Departure</label>
             <textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={3} placeholder="Any additional notes..." style={{ ...inputStyle, resize: "vertical" }} />
           </div>
+          {/* No Time Off Requests */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <input
+              type="checkbox"
+              id="noTimeOff"
+              checked={form.noTimeOff || false}
+              onChange={e => set("noTimeOff", e.target.checked)}
+              style={{ width: 16, height: 16, cursor: "pointer" }}
+            />
+            <label htmlFor="noTimeOff" style={{ ...labelStyle, margin: 0, cursor: "pointer" }}>No time off requests</label>
+          </div>
         </div>
         <div style={{ padding: "16px 28px", borderTop: "1px solid #F1F5F9", display: "flex", gap: 10, justifyContent: "flex-end", flexShrink: 0, background: "#fff" }}>
           {!isNew && onDelete && (
