@@ -7,16 +7,23 @@ import "react-datepicker/dist/react-datepicker.css";
 
 const BRANCHES = [
   "All Branches",
+  "── New York ──",
   "Baldwin",
   "Bohemia",
   "Brooklyn",
   "Farmingdale",
-  "Hartford",
   "Manhattan",
-  "Milford",
   "New Hyde Park",
+  "── Connecticut ──",
+  "Hartford",
+  "Milford",
   "Stamford",
 ];
+
+const BRANCH_GROUPS = {
+  "── New York ──": ["Baldwin", "Bohemia", "Brooklyn", "Farmingdale", "Manhattan", "New Hyde Park"],
+  "── Connecticut ──": ["Hartford", "Milford", "Stamford"],
+};
 
 const BRANCH_COLORS = {
   "Baldwin":        { bg: "#FEE2E2", color: "#991B1B", dot: "#EF4444" },
@@ -559,12 +566,16 @@ export default function App() {
   };
 
    const filteredEvents = useMemo(() => {
-    const today = new Date();
-    const years = [today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1];
-    const holidays = years.flatMap(y => getUSHolidays(y));
-    const allEvents = [...events, ...holidays];
-    return branch === "All Branches" ? allEvents : allEvents.filter(e => e.branch === branch || e.eventType === "Company Event" || e.eventType === "Holiday");
-  }, [events, branch]);
+  const today = new Date();
+  const years = [today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1];
+  const holidays = years.flatMap(y => getUSHolidays(y));
+  const allEvents = [...events, ...holidays];
+  if (branch === "All Branches") return allEvents;
+  if (BRANCH_GROUPS[branch]) {
+    return allEvents.filter(e => BRANCH_GROUPS[branch].includes(e.branch) || e.eventType === "Company Event" || e.eventType === "Holiday");
+  }
+  return allEvents.filter(e => e.branch === branch || e.eventType === "Company Event" || e.eventType === "Holiday");
+}, [events, branch]);
 
   const handleSave = async (form) => {
     if (adding) {
@@ -654,15 +665,24 @@ export default function App() {
           <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em" }}>Branch</span>
           <div style={{ position: "relative" }}>
             <select value={branch} onChange={e => setBranch(e.target.value)} style={{ appearance: "none", WebkitAppearance: "none", padding: "9px 36px 9px 14px", borderRadius: 10, border: "1.5px solid #CBD5E1", background: "#fff", color: "#0F172A", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", outline: "none", minWidth: 200 }}>
-              {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+              {BRANCHES.map(b => (
+                <option key={b} value={b} disabled={b.startsWith("──")} style={{ color: b.startsWith("──") ? "#94A3B8" : "#0F172A", fontWeight: b.startsWith("──") ? 400 : 700 }}>
+                  {b}
+              </option>
+             ))}
             </select>
             <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#64748B", fontSize: 12 }}>▾</span>
           </div>
-          {branch !== "All Branches" && (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 20, background: BRANCH_COLORS[branch]?.bg || "#F1F5F9", color: BRANCH_COLORS[branch]?.color || "#475569", fontSize: 12, fontWeight: 700, border: `1.5px solid ${BRANCH_COLORS[branch]?.dot || "#94A3B8"}` }}>
-              📍 {branch}
-            </div>
-          )}
+          {branch !== "All Branches" && !BRANCH_GROUPS[branch] && (
+  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 20, background: BRANCH_COLORS[branch]?.bg || "#F1F5F9", color: BRANCH_COLORS[branch]?.color || "#475569", fontSize: 12, fontWeight: 700, border: `1.5px solid ${BRANCH_COLORS[branch]?.dot || "#94A3B8"}` }}>
+    📍 {branch}
+  </div>
+)}
+{branch !== "All Branches" && BRANCH_GROUPS[branch] && (
+  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 20, background: "#EFF6FF", color: "#1D4ED8", fontSize: 12, fontWeight: 700, border: "1.5px solid #93C5FD" }}>
+    🗺 {branch.replace(/──\s*/g, "").trim()}
+  </div>
+)}
         </div>
 
         {/* Calendar */}
