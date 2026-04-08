@@ -48,14 +48,14 @@ const BRANCH_COLORS = {
   "Connecticut":    { bg: "#F0FDF4", color: "#166534", dot: "#86EFAC" },
 };
 
-const EVENT_TYPES = ["Out of Office", "Half Day", "Coming in Late", "Leaving Early", "Training", "Counter Day", "Company Event", "Branch Event", "Holiday"];
-
+const EVENT_TYPES = ["Out of Office", "Half Day", "Coming in Late", "Leaving Early", "Training", "Counter Day", "Customer/Jobsite Visit", "Company Event", "Branch Event", "Holiday"];
 const EVENT_TYPE_CONFIG = {
   "Out of Office":   { bg: "#FEE2E2", color: "#991B1B" },
   "Half Day":        { bg: "#FEF3C7", color: "#92400E" },
   "Coming in Late":  { bg: "#FEF3C7", color: "#92400E" },
   "Leaving Early":   { bg: "#FEF3C7", color: "#92400E" },
   "Training":        { bg: "#EDE9FE", color: "#5B21B6" },
+  "Customer/Jobsite Visit": { bg: "#D1FAE5", color: "#065F46" },
   "Company Event":   { bg: "#0F172A", color: "#fff" },
   "Branch Event":    { bg: "#0369A1", color: "#fff" },
   "Holiday":         { bg: "#1E3A5F", color: "#fff" },
