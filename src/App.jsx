@@ -23,6 +23,15 @@ const BRANCHES = [
 const BRANCH_GROUPS = {
   "── New York ──": ["Baldwin", "Bohemia", "Brooklyn", "Farmingdale", "Manhattan", "New Hyde Park"],
   "── Connecticut ──": ["Hartford", "Milford", "Stamford"],
+  "New York": ["Baldwin", "Bohemia", "Brooklyn", "Farmingdale", "Manhattan", "New Hyde Park"],
+  "Connecticut": ["Hartford", "Milford", "Stamford"],
+};
+
+const BRANCH_STATE = {
+  "Baldwin": "NY", "Bohemia": "NY", "Brooklyn": "NY",
+  "Farmingdale": "NY", "Manhattan": "NY", "New Hyde Park": "NY",
+  "Hartford": "CT", "Milford": "CT", "Stamford": "CT",
+  "New York": "NY", "Connecticut": "CT",
 };
 
 const BRANCH_COLORS = {
@@ -35,6 +44,8 @@ const BRANCH_COLORS = {
   "Milford":        { bg: "#FEF9C3", color: "#713F12", dot: "#EAB308" },
   "New Hyde Park":  { bg: "#FFF7ED", color: "#9A3412", dot: "#F97316" },
   "Stamford":       { bg: "#CCFBF1", color: "#115E59", dot: "#14B8A6" },
+  "New York":       { bg: "#EFF6FF", color: "#1D4ED8", dot: "#93C5FD" },
+  "Connecticut":    { bg: "#F0FDF4", color: "#166534", dot: "#86EFAC" },
 };
 
 const EVENT_TYPES = ["Out of Office", "Half Day", "Coming in Late", "Leaving Early", "Training", "Counter Day", "Company Event", "Branch Event", "Holiday"];
@@ -66,7 +77,6 @@ function LoginScreen({ onMicrosoftLogin, onLogin }) {
   const [localUser, setLocalUser] = useState("");
   const [localPass, setLocalPass] = useState("");
   const [localError, setLocalError] = useState("");
-
 
   const LOCAL_ADMIN = { username: "admin", password: "Johnstone2024!" };
 
@@ -153,7 +163,7 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
     <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.55)", backdropFilter: "blur(4px)", zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onClose}>
       <div style={{ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 520, maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 25px 60px rgba(0,0,0,0.18)", fontFamily: "'DM Sans', sans-serif", overflow: "hidden" }} onClick={e => e.stopPropagation()}>
         <div style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%)", padding: "22px 28px", flexShrink: 0 }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#94A3B8", marginBottom: 4 }}>{isNew ? "New Event" : `Editing Event`}</div>
+          <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#94A3B8", marginBottom: 4 }}>{isNew ? "New Event" : "Editing Event"}</div>
           <div style={{ fontSize: 20, fontWeight: 700, color: "#fff" }}>{isNew ? "Add Event" : "Edit Event"}</div>
         </div>
         <div style={{ overflowY: "auto", flex: 1, padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -168,9 +178,26 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
           {/* Branch */}
           <div>
             <label style={labelStyle}>Branch{req}</label>
-           <select value={form.branch} onChange={e => set("branch", e.target.value)} style={inputStyle}>
-  {BRANCHES.map(b => <option key={b}>{b}</option>)}
-</select>
+            <select value={form.branch} onChange={e => set("branch", e.target.value)} style={inputStyle}>
+              <option value="All Branches">All Branches</option>
+              <optgroup label="── Groups ──">
+                <option value="New York">🗺 New York (All NY Branches)</option>
+                <option value="Connecticut">🗺 Connecticut (All CT Branches)</option>
+              </optgroup>
+              <optgroup label="── New York ──">
+                <option value="Baldwin">Baldwin</option>
+                <option value="Bohemia">Bohemia</option>
+                <option value="Brooklyn">Brooklyn</option>
+                <option value="Farmingdale">Farmingdale</option>
+                <option value="Manhattan">Manhattan</option>
+                <option value="New Hyde Park">New Hyde Park</option>
+              </optgroup>
+              <optgroup label="── Connecticut ──">
+                <option value="Hartford">Hartford</option>
+                <option value="Milford">Milford</option>
+                <option value="Stamford">Stamford</option>
+              </optgroup>
+            </select>
           </div>
 
           {/* Event Type */}
@@ -207,6 +234,7 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
             <label style={labelStyle}>Notes / Time of Arrival or Departure</label>
             <textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={3} placeholder="Any additional notes..." style={{ ...inputStyle, resize: "vertical" }} />
           </div>
+
           {/* No Time Off Requests */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <input
@@ -302,7 +330,6 @@ function CalendarView({ events, onSelectEvent, branch }) {
 
   const toDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-  // Get events that span a given date
   const eventsForDate = (dateStr) => {
     const filtered = events.filter(ev => ev.startDate <= dateStr && ev.endDate >= dateStr);
     return filtered.sort((a, b) => {
@@ -317,13 +344,17 @@ function CalendarView({ events, onSelectEvent, branch }) {
 
   const prevMonth = () => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); };
   const nextMonth = () => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); };
+
   const EventChip = ({ ev }) => {
     const branchCfg = BRANCH_COLORS[ev.branch] || { bg: "#F1F5F9", color: "#475569" };
     const isCompanyWide = ev.eventType === "Company Event" || ev.eventType === "Holiday";
     const isBranchEvent = ev.eventType === "Branch Event";
     const isTraining = ev.eventType === "Training";
-const isCounterDay = ev.eventType === "Counter Day";
-const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
+    const isCounterDay = ev.eventType === "Counter Day";
+    const isGroupEvent = ev.branch === "New York" || ev.branch === "Connecticut";
+    const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
+    const stateLabel = BRANCH_STATE[ev.branch] ? ` · ${BRANCH_STATE[ev.branch]}` : "";
+
     return (
       <button onClick={() => onSelectEvent(ev)} style={{
         display: "block", width: "100%", textAlign: "left",
@@ -334,10 +365,10 @@ const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
         lineHeight: 1.4, overflow: "hidden", marginBottom: 2,
       }}>
         <div style={{ fontSize: 10, fontWeight: 700, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
-         {isCompanyWide ? `📅 ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : isTraining ? `🎓 ${ev.employeeName}` : isCounterDay ? `🏪 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
+          {isCompanyWide ? `📅 ${ev.employeeName}` : isGroupEvent ? `🗺 ${ev.branch}: ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : isTraining ? `🎓 ${ev.employeeName}` : isCounterDay ? `🏪 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
         </div>
         <div style={{ fontSize: 9, opacity: 0.75, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
-        {ev.noTimeOff ? "🚫 No time off requests" : isTraining ? `${ev.branch} — Training` : isCounterDay ? `${ev.branch} — Counter Day` : isCompanyWide ? ev.eventType : isBranchEvent ? "Branch Event" : ev.eventType}
+          {ev.noTimeOff ? "🚫 No time off requests" : isTraining ? `${ev.branch} — Training` : isCounterDay ? `${ev.branch} — Counter Day` : isCompanyWide ? ev.eventType : isBranchEvent ? "Branch Event" : isGroupEvent ? `${ev.eventType} · All ${ev.branch} Branches` : `${ev.eventType}${stateLabel}`}
         </div>
       </button>
     );
@@ -384,29 +415,26 @@ const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
                     </div>
                     {cell.events.slice(0, 15).map(ev => <EventChip key={ev.id + cell.dateStr} ev={ev} />)}
                     {cell.events.length > 15 && (
-  <div
-    onClick={() => setExpandedDay(cell.dateStr)}
-    style={{ fontSize: 9, color: "#6366F1", fontWeight: 600, textAlign: "center", marginTop: 2, cursor: "pointer" }}
-  >
-     +{cell.events.length - 15} more
-  </div>
-)}
-                    </>
+                      <div onClick={() => setExpandedDay(cell.dateStr)} style={{ fontSize: 9, color: "#6366F1", fontWeight: 600, textAlign: "center", marginTop: 2, cursor: "pointer" }}>
+                        +{cell.events.length - 15} more
+                      </div>
+                    )}
+                  </>
                 )}
-      {expandedDay && (
-        <div onClick={() => setExpandedDay(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.08)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 12, padding: 20, minWidth: 280, maxWidth: 360, maxHeight: "80vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>
-  {new Date(expandedDay + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-</div>
-            {(() => {
-              const dayCell = monthCells.find(c => c.dateStr === expandedDay);
-              return dayCell?.events.map(ev => <EventChip key={ev.id + expandedDay} ev={ev} />);
-            })()}
-            <div onClick={() => setExpandedDay(null)} style={{ marginTop: 14, textAlign: "center", fontSize: 12, color: "#94A3B8", cursor: "pointer" }}>Close</div>
-          </div>
-        </div>
-      )}
+                {expandedDay && (
+                  <div onClick={() => setExpandedDay(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.08)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 12, padding: 20, minWidth: 280, maxWidth: 360, maxHeight: "80vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>
+                        {new Date(expandedDay + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+                      </div>
+                      {(() => {
+                        const dayCell = monthCells.find(c => c && c.dateStr === expandedDay);
+                        return dayCell?.events.map(ev => <EventChip key={ev.id + expandedDay} ev={ev} />);
+                      })()}
+                      <div onClick={() => setExpandedDay(null)} style={{ marginTop: 14, textAlign: "center", fontSize: 12, color: "#94A3B8", cursor: "pointer" }}>Close</div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -442,11 +470,11 @@ const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
       )}
 
       {/* Branch Legend */}
-      {branch === "All Branches" && (
+      {(branch === "All Branches" || BRANCH_GROUPS[branch]) && (
         <div style={{ marginTop: 20, padding: "16px 20px", background: "#F8FAFC", borderRadius: 12, border: "1.5px solid #E2E8F0" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Branch Colors</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {Object.entries(BRANCH_COLORS).map(([name, cfg]) => (
+            {Object.entries(BRANCH_COLORS).filter(([name]) => !["New York", "Connecticut"].includes(name)).map(([name, cfg]) => (
               <div key={name} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ width: 10, height: 10, borderRadius: 3, background: cfg.bg, border: `1.5px solid ${cfg.dot}`, flexShrink: 0 }} />
                 <span style={{ fontSize: 11, color: "#64748B", fontWeight: 600 }}>{name}</span>
@@ -458,30 +486,23 @@ const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
     </div>
   );
 }
+
 function getUSHolidays(year) {
-  // Fixed holidays
   const fixed = [
     { name: "New Year's Day",  date: `${year}-01-01` },
     { name: "Independence Day", date: `${year}-07-04` },
     { name: "Christmas Day",   date: `${year}-12-25` },
   ];
-
-  // Memorial Day — last Monday in May
   const may = new Date(year, 4, 31);
   while (may.getDay() !== 1) may.setDate(may.getDate() - 1);
   fixed.push({ name: "Memorial Day", date: may.toISOString().slice(0, 10) });
-
-  // Labor Day — first Monday in September
   const sep = new Date(year, 8, 1);
   while (sep.getDay() !== 1) sep.setDate(sep.getDate() + 1);
   fixed.push({ name: "Labor Day", date: sep.toISOString().slice(0, 10) });
-
-  // Thanksgiving — fourth Thursday in November
   const nov = new Date(year, 10, 1);
   while (nov.getDay() !== 4) nov.setDate(nov.getDate() + 1);
   nov.setDate(nov.getDate() + 21);
   fixed.push({ name: "Thanksgiving Day", date: nov.toISOString().slice(0, 10) });
-
   return fixed.map((h, i) => ({
     id: `HOLIDAY-${year}-${i}`,
     employeeName: h.name,
@@ -492,6 +513,7 @@ function getUSHolidays(year) {
     notes: "",
   }));
 }
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -504,7 +526,6 @@ export default function App() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const { instance } = useMsal();
-
   const canEdit = currentUser?.role === "editor";
 
   useEffect(() => {
@@ -520,7 +541,6 @@ export default function App() {
           avatar: result.account.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase(),
         });
       } else {
-        // Check for existing session on refresh
         const accounts = instance.getAllAccounts();
         if (accounts.length > 0) {
           const account = accounts[0];
@@ -534,9 +554,7 @@ export default function App() {
               role: isEditor ? "editor" : "viewer",
               avatar: account.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase(),
             });
-          }).catch(() => {
-            // Silent token failed, user needs to log in again
-          });
+          }).catch(() => {});
         }
       }
     }).catch(e => console.error(e));
@@ -559,23 +577,35 @@ export default function App() {
     setUserMenuOpen(false);
     instance.logoutRedirect().catch(e => console.error(e));
   };
-
   const handleMicrosoftLogin = async () => {
     try { await instance.loginRedirect(loginRequest); }
     catch (e) { console.error(e); }
   };
 
-   const filteredEvents = useMemo(() => {
-  const today = new Date();
-  const years = [today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1];
-  const holidays = years.flatMap(y => getUSHolidays(y));
-  const allEvents = [...events, ...holidays];
-  if (branch === "All Branches") return allEvents;
-  if (BRANCH_GROUPS[branch]) {
-    return allEvents.filter(e => BRANCH_GROUPS[branch].includes(e.branch) || e.eventType === "Company Event" || e.eventType === "Holiday");
-  }
-  return allEvents.filter(e => e.branch === branch || e.eventType === "Company Event" || e.eventType === "Holiday");
-}, [events, branch]);
+  const filteredEvents = useMemo(() => {
+    const today = new Date();
+    const years = [today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1];
+    const holidays = years.flatMap(y => getUSHolidays(y));
+    const allEvents = [...events, ...holidays];
+    if (branch === "All Branches") return allEvents;
+    if (BRANCH_GROUPS[branch]) {
+      return allEvents.filter(e =>
+        BRANCH_GROUPS[branch].includes(e.branch) ||
+        e.branch === branch ||
+        e.eventType === "Company Event" ||
+        e.eventType === "Holiday"
+      );
+    }
+    return allEvents.filter(e =>
+      e.branch === branch ||
+      e.branch === BRANCH_STATE[branch] && false || // placeholder
+      e.eventType === "Company Event" ||
+      e.eventType === "Holiday" ||
+      // Also show group events (NY/CT) when viewing an individual branch
+      (e.branch === "New York" && BRANCH_GROUPS["New York"].includes(branch)) ||
+      (e.branch === "Connecticut" && BRANCH_GROUPS["Connecticut"].includes(branch))
+    );
+  }, [events, branch]);
 
   const handleSave = async (form) => {
     if (adding) {
@@ -653,7 +683,6 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: 1300, margin: "0 auto", padding: "28px 32px" }} onClick={() => setUserMenuOpen(false)}>
-
         {!canEdit && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderRadius: 10, background: "#F8FAFC", border: "1.5px solid #E2E8F0", marginBottom: 20, fontSize: 13, color: "#64748B" }}>
             👁 <span>You have <strong>view-only</strong> access.</span>
@@ -665,24 +694,30 @@ export default function App() {
           <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em" }}>Branch</span>
           <div style={{ position: "relative" }}>
             <select value={branch} onChange={e => setBranch(e.target.value)} style={{ appearance: "none", WebkitAppearance: "none", padding: "9px 36px 9px 14px", borderRadius: 10, border: "1.5px solid #CBD5E1", background: "#fff", color: "#0F172A", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", outline: "none", minWidth: 200 }}>
-              {BRANCHES.map(b => (
-                <option key={b} value={b} disabled={b.startsWith("──")} style={{ color: b.startsWith("──") ? "#94A3B8" : "#0F172A", fontWeight: b.startsWith("──") ? 400 : 700 }}>
-                  {b}
-              </option>
-             ))}
+              <option value="All Branches">All Branches</option>
+              <optgroup label="── Groups ──">
+                <option value="── New York ──">🗺 New York</option>
+                <option value="── Connecticut ──">🗺 Connecticut</option>
+              </optgroup>
+              <optgroup label="── New York ──">
+                {["Baldwin","Bohemia","Brooklyn","Farmingdale","Manhattan","New Hyde Park"].map(b => <option key={b} value={b}>{b}</option>)}
+              </optgroup>
+              <optgroup label="── Connecticut ──">
+                {["Hartford","Milford","Stamford"].map(b => <option key={b} value={b}>{b}</option>)}
+              </optgroup>
             </select>
             <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#64748B", fontSize: 12 }}>▾</span>
           </div>
           {branch !== "All Branches" && !BRANCH_GROUPS[branch] && (
-  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 20, background: BRANCH_COLORS[branch]?.bg || "#F1F5F9", color: BRANCH_COLORS[branch]?.color || "#475569", fontSize: 12, fontWeight: 700, border: `1.5px solid ${BRANCH_COLORS[branch]?.dot || "#94A3B8"}` }}>
-    📍 {branch}
-  </div>
-)}
-{branch !== "All Branches" && BRANCH_GROUPS[branch] && (
-  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 20, background: "#EFF6FF", color: "#1D4ED8", fontSize: 12, fontWeight: 700, border: "1.5px solid #93C5FD" }}>
-    🗺 {branch.replace(/──\s*/g, "").trim()}
-  </div>
-)}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 20, background: BRANCH_COLORS[branch]?.bg || "#F1F5F9", color: BRANCH_COLORS[branch]?.color || "#475569", fontSize: 12, fontWeight: 700, border: `1.5px solid ${BRANCH_COLORS[branch]?.dot || "#94A3B8"}` }}>
+              📍 {branch}
+            </div>
+          )}
+          {BRANCH_GROUPS[branch] && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 20, background: "#EFF6FF", color: "#1D4ED8", fontSize: 12, fontWeight: 700, border: "1.5px solid #93C5FD" }}>
+              🗺 {branch.replace(/──\s*/g, "").trim()}
+            </div>
+          )}
         </div>
 
         {/* Calendar */}
