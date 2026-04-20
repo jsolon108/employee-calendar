@@ -575,7 +575,13 @@ export default function App() {
     if (!currentUser) return;
     const fetchEvents = async () => {
       setLoading(true);
-      const { data } = await supabase.from("events").select("*").order("startDate");
+      const from = new Date();
+from.setFullYear(from.getFullYear() - 2);
+const to = new Date();
+to.setFullYear(to.getFullYear() + 2);
+const fromStr = from.toISOString().split("T")[0];
+const toStr = to.toISOString().split("T")[0];
+const { data } = await supabase.from("events").select("*").gte("startDate", fromStr).lte("startDate", toStr).order("startDate");
       if (data) setEvents(data);
       setLoading(false);
     };
