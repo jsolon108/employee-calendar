@@ -578,7 +578,7 @@ export default function App() {
       const from = new Date();
 from.setFullYear(from.getFullYear() - 2);
 const to = new Date();
-to.setFullYear(to.getFullYear() + 2);
+to.setFullYear(to.getFullYear() + 5);
 const fromStr = from.toISOString().split("T")[0];
 const toStr = to.toISOString().split("T")[0];
 const { data } = await supabase.from("events").select("*").gte("startDate", fromStr).lte("startDate", toStr).order("startDate");
