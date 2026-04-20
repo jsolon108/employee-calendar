@@ -581,7 +581,7 @@ const to = new Date();
 to.setFullYear(to.getFullYear() + 5);
 const fromStr = from.toISOString().split("T")[0];
 const toStr = to.toISOString().split("T")[0];
-const { data } = await supabase.from("events").select("*").gte("startDate", fromStr).lte("startDate", toStr).order("startDate");
+const { data } = await supabase.from("events").select("*").gte("startDate", fromStr).lte("startDate", toStr).order("startDate").limit(10000);
       if (data) setEvents(data);
       setLoading(false);
     };
