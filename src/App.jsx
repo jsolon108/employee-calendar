@@ -385,11 +385,22 @@ function CalendarView({ events, onSelectEvent, branch }) {
 
   return (
     <div>
-      {/* Nav */}
+       {/* Nav */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <button onClick={calMode === "month" ? prevMonth : () => setWeekOffset(o => o - 1)} style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#475569", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>‹</button>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A" }}>{calMode === "month" ? `${MONTHS[calMonth]} ${calYear}` : weekLabel()}</div>
+          {calMode === "month" ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <select value={calMonth} onChange={e => setCalMonth(Number(e.target.value))} style={{ appearance: "none", WebkitAppearance: "none", padding: "6px 28px 6px 12px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#0F172A", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+                {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
+              </select>
+              <select value={calYear} onChange={e => setCalYear(Number(e.target.value))} style={{ appearance: "none", WebkitAppearance: "none", padding: "6px 28px 6px 12px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#0F172A", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+                {Array.from({ length: 10 }, (_, i) => today.getFullYear() - 7 + i).map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+          ) : (
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#0F172A" }}>{weekLabel()}</div>
+          )}
           <div style={{ display: "flex", background: "#F1F5F9", borderRadius: 8, padding: 3, gap: 2 }}>
             {[["month", "Month"], ["week", "Week"]].map(([m, l]) => (
               <button key={m} onClick={() => setCalMode(m)} style={{ padding: "5px 12px", borderRadius: 6, border: "none", background: calMode === m ? "#fff" : "transparent", color: calMode === m ? "#0F172A" : "#94A3B8", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{l}</button>
