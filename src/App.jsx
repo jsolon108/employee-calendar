@@ -591,7 +591,7 @@ while (true) {
   from2 += 1000;
 }
 const data = allData;
-      if (data) { console.log('loaded:', data.length, 'last:', data[data.length-1]?.startDate); setEvents(data); }
+      if (data) setEvents(data);
       setLoading(false);
     };
     fetchEvents();
