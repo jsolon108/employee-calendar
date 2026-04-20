@@ -424,8 +424,8 @@ function CalendarView({ events, onSelectEvent, branch }) {
                     <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
                       <span style={{ width: 22, height: 22, borderRadius: "50%", background: cell.isToday ? "#3B82F6" : "transparent", color: cell.isToday ? "#fff" : "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: cell.isToday ? 800 : 500 }}>{cell.dayNum}</span>
                     </div>
-                    {cell.events.slice(0, 15).map(ev => <EventChip key={ev.id + cell.dateStr} ev={ev} />)}
-                    {cell.events.length > 15 && (
+                    {cell.events.slice(0, 25).map(ev => <EventChip key={ev.id + cell.dateStr} ev={ev} />)}
+                    {cell.events.length > 25 && (
                       <div onClick={() => setExpandedDay(cell.dateStr)} style={{ fontSize: 9, color: "#6366F1", fontWeight: 600, textAlign: "center", marginTop: 2, cursor: "pointer" }}>
                         +{cell.events.length - 15} more
                       </div>
