@@ -758,7 +758,7 @@ export default function App() {
             👁 <span>You have <strong>view-only</strong> access.</span>
           </div>
         )}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em" }}>Branch</span>
           <div style={{ position: "relative" }}>
             <select value={branch} onChange={e => setBranch(e.target.value)} style={{ appearance: "none", WebkitAppearance: "none", padding: "9px 36px 9px 14px", borderRadius: 10, border: "1.5px solid #CBD5E1", background: "#fff", color: "#0F172A", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", outline: "none", minWidth: 200 }}>
@@ -786,10 +786,7 @@ export default function App() {
               🗺 {branch.replace(/──\s*/g, "").trim()}
             </div>
           )}
-        </div>
-        {/* Event Type Filter */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em" }}>Event Type</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em", marginLeft: 12 }}>Event Type</span>
           <div style={{ position: "relative" }}>
             <select value={eventTypeFilter} onChange={e => setEventTypeFilter(e.target.value)} style={{ appearance: "none", WebkitAppearance: "none", padding: "9px 36px 9px 14px", borderRadius: 10, border: "1.5px solid #CBD5E1", background: "#fff", color: "#0F172A", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", outline: "none", minWidth: 200 }}>
               <option value="All">All Event Types</option>
