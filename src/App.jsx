@@ -5,21 +5,6 @@ import { loginRequest, EDITOR_GROUP_ID } from "./authConfig";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const BRANCHES = [
-  "All Branches",
-  "── New York ──",
-  "Baldwin",
-  "Bohemia",
-  "Brooklyn",
-  "Farmingdale",
-  "Manhattan",
-  "New Hyde Park",
-  "── Connecticut ──",
-  "Hartford",
-  "Milford",
-  "Stamford",
-];
-
 const BRANCH_GROUPS = {
   "── New York ──": ["Baldwin", "Bohemia", "Brooklyn", "Farmingdale", "Manhattan", "New Hyde Park"],
   "── Connecticut ──": ["Hartford", "Milford", "Stamford"],
@@ -77,17 +62,12 @@ function LoginScreen({ onMicrosoftLogin, onLogin }) {
   const [localUser, setLocalUser] = useState("");
   const [localPass, setLocalPass] = useState("");
   const [localError, setLocalError] = useState("");
-
   const LOCAL_ADMIN = { username: "admin", password: "Johnstone2024!" };
-
   const handleLocalLogin = () => {
     if (localUser === LOCAL_ADMIN.username && localPass === LOCAL_ADMIN.password) {
       onLogin({ id: 0, name: "Admin", email: "admin@local", role: "editor", branch: null, avatar: "AD" });
-    } else {
-      setLocalError("Incorrect username or password.");
-    }
+    } else { setLocalError("Incorrect username or password."); }
   };
-
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0F172A 0%, #1E3A5F 60%, #1a3a6b 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", padding: 24 }}>
       <div style={{ width: "100%", maxWidth: 440 }}>
@@ -135,6 +115,65 @@ function LoginScreen({ onMicrosoftLogin, onLogin }) {
   );
 }
 
+// ─── Manage Employees Modal ───────────────────────────────────────────────────
+function ManageEmployeesModal({ employees, onClose, onAdd, onDelete }) {
+  const [newName, setNewName] = useState("");
+  const [search, setSearch] = useState("");
+  const [error, setError] = useState("");
+
+  const filtered = employees.filter(e => e.name.toLowerCase().includes(search.toLowerCase()));
+
+  const handleAdd = () => {
+    const trimmed = newName.trim();
+    if (!trimmed) { setError("Please enter a name."); return; }
+    if (employees.some(e => e.name.toLowerCase() === trimmed.toLowerCase())) { setError("This employee already exists."); return; }
+    onAdd(trimmed);
+    setNewName("");
+    setError("");
+  };
+
+  const inputStyle = { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #E2E8F0", fontSize: 14, color: "#0F172A", outline: "none", boxSizing: "border-box", fontFamily: "inherit", background: "#fff" };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.55)", backdropFilter: "blur(4px)", zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onClose}>
+      <div style={{ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 500, maxHeight: "85vh", display: "flex", flexDirection: "column", boxShadow: "0 25px 60px rgba(0,0,0,0.18)", fontFamily: "'DM Sans', sans-serif", overflow: "hidden" }} onClick={e => e.stopPropagation()}>
+        <div style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%)", padding: "22px 28px", flexShrink: 0 }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#94A3B8", marginBottom: 4 }}>Settings</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "#fff" }}>Manage Employees</div>
+        </div>
+        <div style={{ padding: "20px 28px", borderBottom: "1px solid #F1F5F9", flexShrink: 0 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              value={newName}
+              onChange={e => { setNewName(e.target.value); setError(""); }}
+              onKeyDown={e => e.key === "Enter" && handleAdd()}
+              placeholder="Add new employee name..."
+              style={{ ...inputStyle, flex: 1 }}
+            />
+            <button onClick={handleAdd} style={{ padding: "10px 20px", borderRadius: 8, border: "none", background: "linear-gradient(135deg, #0F172A, #1E3A5F)", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>Add</button>
+          </div>
+          {error && <div style={{ fontSize: 11, color: "#DC2626", marginTop: 6, fontWeight: 600 }}>⚠ {error}</div>}
+        </div>
+        <div style={{ padding: "12px 28px", borderBottom: "1px solid #F1F5F9", flexShrink: 0 }}>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder={`Search ${employees.length} employees...`} style={inputStyle} />
+        </div>
+        <div style={{ overflowY: "auto", flex: 1 }}>
+          {filtered.map(emp => (
+            <div key={emp.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 28px", borderBottom: "1px solid #F8FAFC" }}>
+              <span style={{ fontSize: 14, color: "#0F172A" }}>{emp.name}</span>
+              <button onClick={() => onDelete(emp.id)} style={{ padding: "4px 10px", borderRadius: 6, border: "1.5px solid #FEE2E2", background: "#FEF2F2", color: "#DC2626", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Remove</button>
+            </div>
+          ))}
+          {filtered.length === 0 && <div style={{ padding: "24px 28px", color: "#94A3B8", fontSize: 14 }}>No employees found.</div>}
+        </div>
+        <div style={{ padding: "16px 28px", borderTop: "1px solid #F1F5F9", flexShrink: 0 }}>
+          <button onClick={onClose} style={{ padding: "10px 24px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#64748B", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Event Modal ──────────────────────────────────────────────────────────────
 function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] }) {
   const blank = { employeeName: "", branch: "Farmingdale", eventType: "Out of Office", startDate: "", endDate: "", notes: "" };
@@ -167,25 +206,14 @@ function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] })
           <div style={{ fontSize: 20, fontWeight: 700, color: "#fff" }}>{isNew ? "Add Event" : "Edit Event"}</div>
         </div>
         <div style={{ overflowY: "auto", flex: 1, padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
-
-          {/* Employee Name */}
           <div>
             <label style={labelStyle}>Employee Name / Event Name{req}</label>
-            <input
-              list="employee-list"
-              value={form.employeeName}
-              onChange={e => set("employeeName", e.target.value)}
-              placeholder="e.g. John Smith"
-              style={borderErr("employeeName")}
-              autoComplete="off"
-            />
+            <input list="employee-list" value={form.employeeName} onChange={e => set("employeeName", e.target.value)} placeholder="e.g. John Smith" style={borderErr("employeeName")} autoComplete="off" />
             <datalist id="employee-list">
-              {employees.map(name => <option key={name} value={name} />)}
+              {employees.map(emp => <option key={emp.id} value={emp.name} />)}
             </datalist>
             {errors.employeeName && <div style={errStyle}>⚠ {errors.employeeName}</div>}
           </div>
-
-          {/* Branch */}
           <div>
             <label style={labelStyle}>Branch{req}</label>
             <select value={form.branch} onChange={e => set("branch", e.target.value)} style={inputStyle}>
@@ -209,16 +237,12 @@ function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] })
               </optgroup>
             </select>
           </div>
-
-          {/* Event Type */}
           <div>
             <label style={labelStyle}>Event Type{req}</label>
             <select value={form.eventType} onChange={e => set("eventType", e.target.value)} style={inputStyle}>
               {EVENT_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
-
-          {/* Date Range */}
           <div>
             <label style={labelStyle}>Date Range{req}</label>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -238,22 +262,12 @@ function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] })
             {errors.startDate && <div style={errStyle}>⚠ {errors.startDate}</div>}
             {errors.endDate && <div style={errStyle}>⚠ {errors.endDate}</div>}
           </div>
-
-          {/* Notes */}
           <div>
             <label style={labelStyle}>Notes / Time of Arrival or Departure</label>
             <textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={3} placeholder="Any additional notes..." style={{ ...inputStyle, resize: "vertical" }} />
           </div>
-
-          {/* No Time Off Requests */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <input
-              type="checkbox"
-              id="noTimeOff"
-              checked={form.noTimeOff || false}
-              onChange={e => set("noTimeOff", e.target.checked)}
-              style={{ width: 16, height: 16, cursor: "pointer" }}
-            />
+            <input type="checkbox" id="noTimeOff" checked={form.noTimeOff || false} onChange={e => set("noTimeOff", e.target.checked)} style={{ width: 16, height: 16, cursor: "pointer" }} />
             <label htmlFor="noTimeOff" style={{ ...labelStyle, margin: 0, cursor: "pointer" }}>No time off requests</label>
           </div>
         </div>
@@ -343,16 +357,16 @@ function CalendarView({ events, onSelectEvent, branch }) {
   const eventsForDate = (dateStr) => {
     const filtered = events.filter(ev => ev.startDate <= dateStr && ev.endDate >= dateStr);
     return filtered.sort((a, b) => {
-     const typeOrder = { "Company Event": 0, "Holiday": 1, "Training": 2, "Counter Day": 3, "Branch Event": 4 };
-const aTypeOrder = typeOrder[a.eventType] ?? 99;
-const bTypeOrder = typeOrder[b.eventType] ?? 99;
-if (aTypeOrder !== bTypeOrder) return aTypeOrder - bTypeOrder;
-const branchOrder = ["Baldwin","Bohemia","Brooklyn","Farmingdale","Manhattan","New Hyde Park","Hartford","Milford","Stamford","New York","Connecticut","All Branches"];
-const aBranch = branchOrder.indexOf(a.branch) === -1 ? 99 : branchOrder.indexOf(a.branch);
-const bBranch = branchOrder.indexOf(b.branch) === -1 ? 99 : branchOrder.indexOf(b.branch);
-if (aBranch !== bBranch) return aBranch - bBranch;
-const firstName = name => name.trim().split(" ")[0].toLowerCase();
-return firstName(a.employeeName).localeCompare(firstName(b.employeeName));
+      const typeOrder = { "Company Event": 0, "Holiday": 1, "Training": 2, "Counter Day": 3, "Branch Event": 4 };
+      const aTypeOrder = typeOrder[a.eventType] ?? 99;
+      const bTypeOrder = typeOrder[b.eventType] ?? 99;
+      if (aTypeOrder !== bTypeOrder) return aTypeOrder - bTypeOrder;
+      const branchOrder = ["Baldwin","Bohemia","Brooklyn","Farmingdale","Manhattan","New Hyde Park","Hartford","Milford","Stamford","New York","Connecticut","All Branches"];
+      const aBranch = branchOrder.indexOf(a.branch) === -1 ? 99 : branchOrder.indexOf(a.branch);
+      const bBranch = branchOrder.indexOf(b.branch) === -1 ? 99 : branchOrder.indexOf(b.branch);
+      if (aBranch !== bBranch) return aBranch - bBranch;
+      const firstName = name => name.trim().split(" ")[0].toLowerCase();
+      return firstName(a.employeeName).localeCompare(firstName(b.employeeName));
     });
   };
 
@@ -368,16 +382,8 @@ return firstName(a.employeeName).localeCompare(firstName(b.employeeName));
     const isGroupEvent = ev.branch === "New York" || ev.branch === "Connecticut";
     const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
     const stateLabel = BRANCH_STATE[ev.branch] ? ` · ${BRANCH_STATE[ev.branch]}` : "";
-
     return (
-      <button onClick={() => onSelectEvent(ev)} style={{
-        display: "block", width: "100%", textAlign: "left",
-        padding: "3px 6px", borderRadius: 4,
-        background: cfg.bg, color: cfg.color,
-        border: "none", cursor: "pointer",
-        fontFamily: "'DM Sans', sans-serif",
-        lineHeight: 1.4, overflow: "hidden", marginBottom: 2,
-      }}>
+      <button onClick={() => onSelectEvent(ev)} style={{ display: "block", width: "100%", textAlign: "left", padding: "3px 6px", borderRadius: 4, background: cfg.bg, color: cfg.color, border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", lineHeight: 1.4, overflow: "hidden", marginBottom: 2 }}>
         <div style={{ fontSize: 10, fontWeight: 700, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
           {isCompanyWide ? `📅 ${ev.employeeName}` : isGroupEvent ? `🗺 ${ev.branch}: ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : isTraining ? `🎓 ${ev.employeeName}` : isCounterDay ? `🏪 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
         </div>
@@ -399,7 +405,6 @@ return firstName(a.employeeName).localeCompare(firstName(b.employeeName));
 
   return (
     <div>
-      {/* Nav */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <button onClick={calMode === "month" ? prevMonth : () => setWeekOffset(o => o - 1)} style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#475569", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>‹</button>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -424,7 +429,6 @@ return firstName(a.employeeName).localeCompare(firstName(b.employeeName));
         <button onClick={calMode === "month" ? nextMonth : () => setWeekOffset(o => o + 1)} style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#475569", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>›</button>
       </div>
 
-      {/* Month View */}
       {calMode === "month" && (
         <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3, marginBottom: 3 }}>
@@ -466,7 +470,6 @@ return firstName(a.employeeName).localeCompare(firstName(b.employeeName));
         </>
       )}
 
-      {/* Week View */}
       {calMode === "week" && (
         <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3, marginBottom: 3 }}>
@@ -494,7 +497,6 @@ return firstName(a.employeeName).localeCompare(firstName(b.employeeName));
         </>
       )}
 
-      {/* Branch Legend */}
       {(branch === "All Branches" || BRANCH_GROUPS[branch]) && (
         <div style={{ marginTop: 20, padding: "16px 20px", background: "#F8FAFC", borderRadius: 12, border: "1.5px solid #E2E8F0" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Branch Colors</div>
@@ -514,9 +516,9 @@ return firstName(a.employeeName).localeCompare(firstName(b.employeeName));
 
 function getUSHolidays(year) {
   const fixed = [
-    { name: "New Year's Day",  date: `${year}-01-01` },
+    { name: "New Year's Day", date: `${year}-01-01` },
     { name: "Independence Day", date: `${year}-07-04` },
-    { name: "Christmas Day",   date: `${year}-12-25` },
+    { name: "Christmas Day", date: `${year}-12-25` },
   ];
   const may = new Date(year, 4, 31);
   while (may.getDay() !== 1) may.setDate(may.getDate() - 1);
@@ -550,6 +552,7 @@ export default function App() {
   const [adding, setAdding] = useState(false);
   const [viewing, setViewing] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [managingEmployees, setManagingEmployees] = useState(false);
 
   const { instance } = useMsal();
   const canEdit = currentUser?.role === "editor";
@@ -611,24 +614,26 @@ export default function App() {
     fetchEvents();
   }, [currentUser]);
 
- useEffect(() => {
-  if (!currentUser) return;
-  const fetchEmployees = async () => {
-    try {
-      const { data } = await supabase
-        .from("events")
-        .select("employeeName")
-        .not("employeeName", "is", null);
-      if (data) {
-        const unique = [...new Set(data.map(r => r.employeeName).filter(n => n && !n.includes(" ") === false))].sort();
-        setEmployees(unique);
-      }
-    } catch (e) {
-      console.error("Failed to fetch employees", e);
-    }
+  useEffect(() => {
+    if (!currentUser) return;
+    const fetchEmployees = async () => {
+      const { data } = await supabase.from("employees").select("*").order("name");
+      if (data) setEmployees(data);
+    };
+    fetchEmployees();
+  }, [currentUser]);
+
+  const handleAddEmployee = async (name) => {
+    const newEmp = { id: `EMP-${Date.now()}`, name };
+    await supabase.from("employees").insert([newEmp]);
+    setEmployees(e => [...e, newEmp].sort((a, b) => a.name.localeCompare(b.name)));
   };
-  fetchEmployees();
-}, [currentUser]);
+
+  const handleDeleteEmployee = async (id) => {
+    if (!window.confirm("Remove this employee from the list?")) return;
+    await supabase.from("employees").delete().eq("id", id);
+    setEmployees(e => e.filter(emp => emp.id !== id));
+  };
 
   const handleLogin = (a) => setCurrentUser(a);
   const handleLogout = () => {
@@ -698,8 +703,6 @@ export default function App() {
   return (
     <div style={{ minHeight: "100vh", background: "#F1F5F9", fontFamily: "'DM Sans', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-
-      {/* Header */}
       <div style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%)", padding: "0 32px" }}>
         <div style={{ maxWidth: 1300, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -711,9 +714,14 @@ export default function App() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             {canEdit && (
-              <button onClick={() => setAdding(true)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.1)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Add Event
-              </button>
+              <>
+                <button onClick={() => setManagingEmployees(true)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.1)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                  👥 Employees
+                </button>
+                <button onClick={() => setAdding(true)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.1)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                  <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Add Event
+                </button>
+              </>
             )}
             <div style={{ position: "relative" }}>
               <button onClick={() => setUserMenuOpen(o => !o)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 10px 5px 5px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.1)", cursor: "pointer", fontFamily: "inherit" }}>
@@ -745,8 +753,6 @@ export default function App() {
             👁 <span>You have <strong>view-only</strong> access.</span>
           </div>
         )}
-
-        {/* Branch Selector */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em" }}>Branch</span>
           <div style={{ position: "relative" }}>
@@ -776,8 +782,6 @@ export default function App() {
             </div>
           )}
         </div>
-
-        {/* Calendar */}
         {loading ? (
           <div style={{ textAlign: "center", padding: 48, color: "#94A3B8", fontSize: 14 }}>Loading events...</div>
         ) : (
@@ -789,6 +793,7 @@ export default function App() {
 
       {viewing && <DetailModal event={viewing} onClose={() => setViewing(null)} onEdit={handleEditFromDetail} canEdit={canEdit} />}
       {(editing || adding) && <EventModal event={editing} isNew={adding} onClose={() => { setEditing(null); setAdding(false); }} onSave={handleSave} onDelete={handleDelete} employees={employees} />}
+      {managingEmployees && <ManageEmployeesModal employees={employees} onClose={() => setManagingEmployees(false)} onAdd={handleAddEmployee} onDelete={handleDeleteEmployee} />}
     </div>
   );
 }
