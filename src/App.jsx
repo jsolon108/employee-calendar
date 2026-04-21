@@ -136,7 +136,7 @@ function LoginScreen({ onMicrosoftLogin, onLogin }) {
 }
 
 // ─── Event Modal ──────────────────────────────────────────────────────────────
-function EventModal({ event, onClose, onSave, onDelete, isNew }) {
+function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] }) {
   const blank = { employeeName: "", branch: "Farmingdale", eventType: "Out of Office", startDate: "", endDate: "", notes: "" };
   const [form, setForm] = useState(event || blank);
   const [errors, setErrors] = useState({});
@@ -171,7 +171,17 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
           {/* Employee Name */}
           <div>
             <label style={labelStyle}>Employee Name / Event Name{req}</label>
-            <input value={form.employeeName} onChange={e => set("employeeName", e.target.value)} placeholder="e.g. John Smith" style={borderErr("employeeName")} />
+            <input
+              list="employee-list"
+              value={form.employeeName}
+              onChange={e => set("employeeName", e.target.value)}
+              placeholder="e.g. John Smith"
+              style={borderErr("employeeName")}
+              autoComplete="off"
+            />
+            <datalist id="employee-list">
+              {employees.map(name => <option key={name} value={name} />)}
+            </datalist>
             {errors.employeeName && <div style={errStyle}>⚠ {errors.employeeName}</div>}
           </div>
 
@@ -385,7 +395,7 @@ function CalendarView({ events, onSelectEvent, branch }) {
 
   return (
     <div>
-       {/* Nav */}
+      {/* Nav */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <button onClick={calMode === "month" ? prevMonth : () => setWeekOffset(o => o - 1)} style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#475569", fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>‹</button>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -424,10 +434,10 @@ function CalendarView({ events, onSelectEvent, branch }) {
                     <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
                       <span style={{ width: 22, height: 22, borderRadius: "50%", background: cell.isToday ? "#3B82F6" : "transparent", color: cell.isToday ? "#fff" : "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: cell.isToday ? 800 : 500 }}>{cell.dayNum}</span>
                     </div>
-                    {cell.events.slice(0, 25).map(ev => <EventChip key={ev.id + cell.dateStr} ev={ev} />)}
-                    {cell.events.length > 25 && (
+                    {cell.events.slice(0, 20).map(ev => <EventChip key={ev.id + cell.dateStr} ev={ev} />)}
+                    {cell.events.length > 20 && (
                       <div onClick={() => setExpandedDay(cell.dateStr)} style={{ fontSize: 9, color: "#6366F1", fontWeight: 600, textAlign: "center", marginTop: 2, cursor: "pointer" }}>
-                        +{cell.events.length - 15} more
+                        +{cell.events.length - 20} more
                       </div>
                     )}
                   </>
@@ -529,6 +539,7 @@ function getUSHolidays(year) {
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [events, setEvents] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [branch, setBranch] = useState("All Branches");
   const [editing, setEditing] = useState(null);
@@ -576,25 +587,46 @@ export default function App() {
     const fetchEvents = async () => {
       setLoading(true);
       const from = new Date();
-from.setFullYear(from.getFullYear() - 2);
-const to = new Date();
-to.setFullYear(to.getFullYear() + 5);
-const fromStr = from.toISOString().split("T")[0];
-const toStr = to.toISOString().split("T")[0];
-let allData = [];
-let from2 = 0;
-while (true) {
-  const { data: chunk } = await supabase.from("events").select("*").gte("startDate", fromStr).lte("startDate", toStr).order("startDate").range(from2, from2 + 999);
-  if (!chunk || chunk.length === 0) break;
-  allData = [...allData, ...chunk];
-  if (chunk.length < 1000) break;
-  from2 += 1000;
-}
-const data = allData;
-      if (data) setEvents(data);
+      from.setFullYear(from.getFullYear() - 2);
+      const to = new Date();
+      to.setFullYear(to.getFullYear() + 5);
+      const fromStr = from.toISOString().split("T")[0];
+      const toStr = to.toISOString().split("T")[0];
+      let allData = [];
+      let from2 = 0;
+      while (true) {
+        const { data: chunk } = await supabase.from("events").select("*").gte("startDate", fromStr).lte("startDate", toStr).order("startDate").range(from2, from2 + 999);
+        if (!chunk || chunk.length === 0) break;
+        allData = [...allData, ...chunk];
+        if (chunk.length < 1000) break;
+        from2 += 1000;
+      }
+      setEvents(allData);
       setLoading(false);
     };
     fetchEvents();
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    const fetchEmployees = async () => {
+      try {
+        const account = instance.getAllAccounts()[0];
+        const tokenResult = await instance.acquireTokenSilent({ account, scopes: ["User.ReadBasic.All"] });
+        let url = "https://graph.microsoft.com/v1.0/users?$select=displayName&$top=999&$filter=accountEnabled eq true";
+        let names = [];
+        while (url) {
+          const res = await fetch(url, { headers: { Authorization: `Bearer ${tokenResult.accessToken}` } });
+          const json = await res.json();
+          names = [...names, ...(json.value || []).map(u => u.displayName)];
+          url = json["@odata.nextLink"] || null;
+        }
+        setEmployees(names.sort());
+      } catch (e) {
+        console.error("Failed to fetch employees", e);
+      }
+    };
+    fetchEmployees();
   }, [currentUser]);
 
   const handleLogin = (a) => setCurrentUser(a);
@@ -624,10 +656,8 @@ const data = allData;
     }
     return allEvents.filter(e =>
       e.branch === branch ||
-      e.branch === BRANCH_STATE[branch] && false || // placeholder
       e.eventType === "Company Event" ||
       e.eventType === "Holiday" ||
-      // Also show group events (NY/CT) when viewing an individual branch
       (e.branch === "New York" && BRANCH_GROUPS["New York"].includes(branch)) ||
       (e.branch === "Connecticut" && BRANCH_GROUPS["Connecticut"].includes(branch))
     );
@@ -757,7 +787,7 @@ const data = allData;
       </div>
 
       {viewing && <DetailModal event={viewing} onClose={() => setViewing(null)} onEdit={handleEditFromDetail} canEdit={canEdit} />}
-      {(editing || adding) && <EventModal event={editing} isNew={adding} onClose={() => { setEditing(null); setAdding(false); }} onSave={handleSave} onDelete={handleDelete} />}
+      {(editing || adding) && <EventModal event={editing} isNew={adding} onClose={() => { setEditing(null); setAdding(false); }} onSave={handleSave} onDelete={handleDelete} employees={employees} />}
     </div>
   );
 }
