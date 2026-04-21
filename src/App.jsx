@@ -343,12 +343,16 @@ function CalendarView({ events, onSelectEvent, branch }) {
   const eventsForDate = (dateStr) => {
     const filtered = events.filter(ev => ev.startDate <= dateStr && ev.endDate >= dateStr);
     return filtered.sort((a, b) => {
-      const order = { "Company Event": 0, "Holiday": 1, "Training": 2, "Counter Day": 3, "Branch Event": 4 };
-      const aOrder = order[a.eventType] ?? 99;
-      const bOrder = order[b.eventType] ?? 99;
-      if (aOrder !== bOrder) return aOrder - bOrder;
-      const firstName = name => name.trim().split(" ")[0].toLowerCase();
-      return firstName(a.employeeName).localeCompare(firstName(b.employeeName));
+     const typeOrder = { "Company Event": 0, "Holiday": 1, "Training": 2, "Counter Day": 3, "Branch Event": 4 };
+const aTypeOrder = typeOrder[a.eventType] ?? 99;
+const bTypeOrder = typeOrder[b.eventType] ?? 99;
+if (aTypeOrder !== bTypeOrder) return aTypeOrder - bTypeOrder;
+const branchOrder = ["Baldwin","Bohemia","Brooklyn","Farmingdale","Manhattan","New Hyde Park","Hartford","Milford","Stamford","New York","Connecticut","All Branches"];
+const aBranch = branchOrder.indexOf(a.branch) === -1 ? 99 : branchOrder.indexOf(a.branch);
+const bBranch = branchOrder.indexOf(b.branch) === -1 ? 99 : branchOrder.indexOf(b.branch);
+if (aBranch !== bBranch) return aBranch - bBranch;
+const firstName = name => name.trim().split(" ")[0].toLowerCase();
+return firstName(a.employeeName).localeCompare(firstName(b.employeeName));
     });
   };
 
