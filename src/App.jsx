@@ -553,6 +553,7 @@ export default function App() {
   const [viewing, setViewing] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [managingEmployees, setManagingEmployees] = useState(false);
+  const [eventTypeFilter, setEventTypeFilter] = useState("All");
 
   const { instance } = useMsal();
   const canEdit = currentUser?.role === "editor";
@@ -651,23 +652,27 @@ export default function App() {
     const years = [today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1];
     const holidays = years.flatMap(y => getUSHolidays(y));
     const allEvents = [...events, ...holidays];
-    if (branch === "All Branches") return allEvents;
-    if (BRANCH_GROUPS[branch]) {
-      return allEvents.filter(e =>
+    let branchFiltered;
+    if (branch === "All Branches") {
+      branchFiltered = allEvents;
+    } else if (BRANCH_GROUPS[branch]) {
+      branchFiltered = allEvents.filter(e =>
         BRANCH_GROUPS[branch].includes(e.branch) ||
         e.branch === branch ||
         e.eventType === "Company Event" ||
         e.eventType === "Holiday"
       );
+    } else {
+      branchFiltered = allEvents.filter(e =>
+        e.branch === branch ||
+        e.eventType === "Company Event" ||
+        e.eventType === "Holiday" ||
+        (e.branch === "New York" && BRANCH_GROUPS["New York"].includes(branch)) ||
+        (e.branch === "Connecticut" && BRANCH_GROUPS["Connecticut"].includes(branch))
+      );
     }
-    return allEvents.filter(e =>
-      e.branch === branch ||
-      e.eventType === "Company Event" ||
-      e.eventType === "Holiday" ||
-      (e.branch === "New York" && BRANCH_GROUPS["New York"].includes(branch)) ||
-      (e.branch === "Connecticut" && BRANCH_GROUPS["Connecticut"].includes(branch))
-    );
-  }, [events, branch]);
+    return eventTypeFilter === "All" ? branchFiltered : branchFiltered.filter(e => e.eventType === eventTypeFilter);
+  }, [events, branch, eventTypeFilter]);
 
   const handleSave = async (form) => {
     if (adding) {
@@ -781,6 +786,17 @@ export default function App() {
               🗺 {branch.replace(/──\s*/g, "").trim()}
             </div>
           )}
+        </div>
+        {/* Event Type Filter */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em" }}>Event Type</span>
+          <div style={{ position: "relative" }}>
+            <select value={eventTypeFilter} onChange={e => setEventTypeFilter(e.target.value)} style={{ appearance: "none", WebkitAppearance: "none", padding: "9px 36px 9px 14px", borderRadius: 10, border: "1.5px solid #CBD5E1", background: "#fff", color: "#0F172A", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", outline: "none", minWidth: 200 }}>
+              <option value="All">All Event Types</option>
+              {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#64748B", fontSize: 12 }}>▾</span>
+          </div>
         </div>
         {loading ? (
           <div style={{ textAlign: "center", padding: 48, color: "#94A3B8", fontSize: 14 }}>Loading events...</div>
