@@ -611,32 +611,24 @@ export default function App() {
     fetchEvents();
   }, [currentUser]);
 
-  useEffect(() => {
-    if (!currentUser) return;
-    const fetchEmployees = async () => {
-      try {
-        const account = instance.getAllAccounts()[0];
-        let tokenResult;
-try {
-  tokenResult = await instance.acquireTokenSilent({ account, scopes: ["User.ReadBasic.All"] });
-} catch (e) {
-  tokenResult = await instance.acquireTokenPopup({ account, scopes: ["User.ReadBasic.All"] });
-}
-        let url = "https://graph.microsoft.com/v1.0/users?$select=displayName&$top=999&$filter=accountEnabled eq true";
-        let names = [];
-        while (url) {
-          const res = await fetch(url, { headers: { Authorization: `Bearer ${tokenResult.accessToken}` } });
-          const json = await res.json();
-          names = [...names, ...(json.value || []).map(u => u.displayName)];
-          url = json["@odata.nextLink"] || null;
-        }
-        setEmployees(names.sort());
-      } catch (e) {
-        console.error("Failed to fetch employees", e);
+ useEffect(() => {
+  if (!currentUser) return;
+  const fetchEmployees = async () => {
+    try {
+      const { data } = await supabase
+        .from("events")
+        .select("employeeName")
+        .not("employeeName", "is", null);
+      if (data) {
+        const unique = [...new Set(data.map(r => r.employeeName).filter(n => n && !n.includes(" ") === false))].sort();
+        setEmployees(unique);
       }
-    };
-    fetchEmployees();
-  }, [currentUser]);
+    } catch (e) {
+      console.error("Failed to fetch employees", e);
+    }
+  };
+  fetchEmployees();
+}, [currentUser]);
 
   const handleLogin = (a) => setCurrentUser(a);
   const handleLogout = () => {
