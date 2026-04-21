@@ -655,18 +655,20 @@ export default function App() {
     let branchFiltered;
     if (branch === "All Branches") {
       branchFiltered = allEvents;
-    } else if (BRANCH_GROUPS[branch]) {
+     } else if (BRANCH_GROUPS[branch]) {
       branchFiltered = allEvents.filter(e =>
         BRANCH_GROUPS[branch].includes(e.branch) ||
         e.branch === branch ||
         e.eventType === "Company Event" ||
-        e.eventType === "Holiday"
+        e.eventType === "Holiday" ||
+        e.eventType === "Training"
       );
     } else {
       branchFiltered = allEvents.filter(e =>
         e.branch === branch ||
         e.eventType === "Company Event" ||
         e.eventType === "Holiday" ||
+        e.eventType === "Training" ||
         (e.branch === "New York" && BRANCH_GROUPS["New York"].includes(branch)) ||
         (e.branch === "Connecticut" && BRANCH_GROUPS["Connecticut"].includes(branch))
       );
