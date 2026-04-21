@@ -616,7 +616,12 @@ export default function App() {
     const fetchEmployees = async () => {
       try {
         const account = instance.getAllAccounts()[0];
-        const tokenResult = await instance.acquireTokenSilent({ account, scopes: ["User.ReadBasic.All"] });
+        let tokenResult;
+try {
+  tokenResult = await instance.acquireTokenSilent({ account, scopes: ["User.ReadBasic.All"] });
+} catch (e) {
+  tokenResult = await instance.acquireTokenPopup({ account, scopes: ["User.ReadBasic.All"] });
+}
         let url = "https://graph.microsoft.com/v1.0/users?$select=displayName&$top=999&$filter=accountEnabled eq true";
         let names = [];
         while (url) {
