@@ -656,9 +656,11 @@ export default function App() {
     if (branch === "All Branches") {
       branchFiltered = allEvents;
      } else if (BRANCH_GROUPS[branch]) {
+      const groupName = branch.replace(/──\s*/g, "").trim(); // "New York" or "Connecticut"
       branchFiltered = allEvents.filter(e =>
         BRANCH_GROUPS[branch].includes(e.branch) ||
         e.branch === branch ||
+        e.branch === groupName ||
         e.eventType === "Company Event" ||
         e.eventType === "Holiday" ||
         e.eventType === "Training"
