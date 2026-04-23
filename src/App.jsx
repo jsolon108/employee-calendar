@@ -4,6 +4,7 @@ import { useMsal } from "@azure/msal-react";
 import { loginRequest, EDITOR_GROUP_ID } from "./authConfig";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Analytics } from "@vercel/analytics/react";
 
 const BRANCH_GROUPS = {
   "── New York ──": ["Baldwin", "Bohemia", "Brooklyn", "Farmingdale", "Manhattan", "New Hyde Park"],
@@ -811,6 +812,7 @@ export default function App() {
       {viewing && <DetailModal event={viewing} onClose={() => setViewing(null)} onEdit={handleEditFromDetail} canEdit={canEdit} />}
       {(editing || adding) && <EventModal event={editing} isNew={adding} onClose={() => { setEditing(null); setAdding(false); }} onSave={handleSave} onDelete={handleDelete} employees={employees} />}
       {managingEmployees && <ManageEmployeesModal employees={employees} onClose={() => setManagingEmployees(false)} onAdd={handleAddEmployee} onDelete={handleDeleteEmployee} />}
+      <Analytics />
     </div>
   );
 }
