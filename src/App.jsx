@@ -33,7 +33,7 @@ const BRANCH_COLORS = {
   "Connecticut":    { bg: "#F0FDF4", color: "#166534", dot: "#86EFAC" },
 };
 
-const EVENT_TYPES = ["Out of Office", "Half Day", "Coming in Late", "Leaving Early", "Training", "Counter Day", "Customer/Jobsite Visit", "Company Event", "Branch Event", "Holiday"];
+const EVENT_TYPES = ["Out of Office", "Half Day", "Coming in Late", "Leaving Early", "Training", "Counter Day", "Customer/Jobsite Visit", "Working at Another Branch", "Company Event", "Branch Event", "Holiday"];
 const EVENT_TYPE_CONFIG = {
   "Out of Office":   { bg: "#FEE2E2", color: "#991B1B" },
   "Half Day":        { bg: "#FEF3C7", color: "#92400E" },
@@ -44,6 +44,7 @@ const EVENT_TYPE_CONFIG = {
   "Company Event":   { bg: "#0F172A", color: "#fff" },
   "Branch Event":    { bg: "#0369A1", color: "#fff" },
   "Holiday":         { bg: "#1E3A5F", color: "#fff" },
+  "Working at Another Branch": { bg: "#F0FDFA", color: "#0F766E" },
 };
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -176,7 +177,7 @@ function ManageEmployeesModal({ employees, onClose, onAdd, onDelete }) {
 
 // ─── Event Modal ──────────────────────────────────────────────────────────────
 function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] }) {
-  const blank = { employeeName: "", branch: "Farmingdale", eventType: "Out of Office", startDate: "", endDate: "", notes: "" };
+  const blank = { employeeName: "", branch: "Farmingdale", eventType: "Out of Office", startDate: "", endDate: "", notes: "", visitingBranch: "" };
   const [form, setForm] = useState(event || blank);
   const [errors, setErrors] = useState({});
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: null })); };
@@ -192,6 +193,7 @@ function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] })
     if (!form.employeeName.trim()) e.employeeName = "Required";
     if (!form.startDate) e.startDate = "Required";
     if (!form.endDate) e.endDate = "Required";
+    if (form.eventType === "Working at Another Branch" && !form.visitingBranch) e.visitingBranch = "Required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -243,6 +245,28 @@ function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] })
               {EVENT_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
+          {form.eventType === "Working at Another Branch" && (
+            <div>
+              <label style={labelStyle}>Working At (Branch){req}</label>
+              <select value={form.visitingBranch || ""} onChange={e => set("visitingBranch", e.target.value)} style={inputStyle}>
+                <option value="">— select branch —</option>
+                <optgroup label="── New York ──">
+                  <option value="Baldwin">Baldwin</option>
+                  <option value="Bohemia">Bohemia</option>
+                  <option value="Brooklyn">Brooklyn</option>
+                  <option value="Farmingdale">Farmingdale</option>
+                  <option value="Manhattan">Manhattan</option>
+                  <option value="New Hyde Park">New Hyde Park</option>
+                </optgroup>
+                <optgroup label="── Connecticut ──">
+                  <option value="Hartford">Hartford</option>
+                  <option value="Milford">Milford</option>
+                  <option value="Stamford">Stamford</option>
+                </optgroup>
+              </select>
+              {errors.visitingBranch && <div style={errStyle}>⚠ {errors.visitingBranch}</div>}
+            </div>
+          )}
           <div>
             <label style={labelStyle}>Date Range{req}</label>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -314,6 +338,11 @@ function DetailModal({ event: ev, onClose, onEdit, canEdit }) {
               <div style={{ fontSize: 13, color: "#0F172A", fontWeight: 600 }}>{formatDate(ev.endDate)}</div>
             </div>
           </div>
+          {ev.visitingBranch && (
+            <div style={{ padding: "10px 14px", background: "#F0FDFA", borderRadius: 8, fontSize: 13, color: "#0F766E", marginBottom: 12, fontWeight: 600 }}>
+              🔄 Working at: {ev.visitingBranch}
+            </div>
+          )}
           {ev.notes && <div style={{ padding: "10px 14px", background: "#F8FAFC", borderRadius: 8, fontSize: 13, color: "#475569", marginBottom: 16 }}><span style={{ fontWeight: 600, color: "#64748B" }}>Notes: </span>{ev.notes}</div>}
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
             <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#64748B", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Close</button>
@@ -379,16 +408,17 @@ function CalendarView({ events, onSelectEvent, branch }) {
     const isBranchEvent = ev.eventType === "Branch Event";
     const isTraining = ev.eventType === "Training";
     const isCounterDay = ev.eventType === "Counter Day";
+    const isVisiting = ev.eventType === "Working at Another Branch";
     const isGroupEvent = ev.branch === "New York" || ev.branch === "Connecticut";
-    const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : branchCfg;
+    const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : isVisiting ? EVENT_TYPE_CONFIG["Working at Another Branch"] : branchCfg;
     const stateLabel = BRANCH_STATE[ev.branch] ? ` · ${BRANCH_STATE[ev.branch]}` : "";
     return (
       <button onClick={() => onSelectEvent(ev)} style={{ display: "block", width: "100%", textAlign: "left", padding: "3px 6px", borderRadius: 4, background: cfg.bg, color: cfg.color, border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", lineHeight: 1.4, overflow: "hidden", marginBottom: 2 }}>
         <div style={{ fontSize: 10, fontWeight: 700, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
-          {isCompanyWide ? `📅 ${ev.employeeName}` : isGroupEvent ? `🗺 ${ev.branch}: ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : isTraining ? `🎓 ${ev.employeeName}` : isCounterDay ? `🏪 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
+          {isCompanyWide ? `📅 ${ev.employeeName}` : isGroupEvent ? `🗺 ${ev.branch}: ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : isTraining ? `🎓 ${ev.employeeName}` : isCounterDay ? `🏪 ${ev.employeeName}` : isVisiting ? `🔄 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
         </div>
         <div style={{ fontSize: 9, opacity: 0.75, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
-          {ev.noTimeOff ? "🚫 No time off requests" : isTraining ? `${ev.branch} — Training` : isCounterDay ? `${ev.branch} — Counter Day` : isCompanyWide ? ev.eventType : isBranchEvent ? "Branch Event" : isGroupEvent ? `${ev.eventType} · All ${ev.branch} Branches` : `${ev.eventType}${stateLabel}`}
+          {ev.noTimeOff ? "🚫 No time off requests" : isTraining ? `${ev.branch} — Training` : isCounterDay ? `${ev.branch} — Counter Day` : isCompanyWide ? ev.eventType : isBranchEvent ? "Branch Event" : isGroupEvent ? `${ev.eventType} · All ${ev.branch} Branches` : isVisiting ? `${ev.branch} → ${ev.visitingBranch || "another branch"}` : `${ev.eventType}${stateLabel}`}
         </div>
       </button>
     );
