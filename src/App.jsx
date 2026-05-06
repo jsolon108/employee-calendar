@@ -712,11 +712,19 @@ export default function App() {
     if (adding) {
       const newId = `EVT-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const newEvent = { ...form, id: newId };
-      await supabase.from("events").insert([newEvent]);
+      const { error } = await supabase.from("events").insert([newEvent]);
+      if (error) {
+        alert(`Failed to save event: ${error.message}\n\nPlease try again or contact support.`);
+        return;
+      }
       setEvents(e => [...e, newEvent].sort((a, b) => a.startDate.localeCompare(b.startDate)));
       setAdding(false);
     } else {
-      await supabase.from("events").update(form).eq("id", form.id);
+      const { error } = await supabase.from("events").update(form).eq("id", form.id);
+      if (error) {
+        alert(`Failed to update event: ${error.message}\n\nPlease try again or contact support.`);
+        return;
+      }
       setEvents(e => e.map(ev => ev.id === form.id ? form : ev));
       setEditing(null);
     }
