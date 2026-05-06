@@ -655,7 +655,7 @@ export default function App() {
   }, [currentUser]);
 
   const handleAddEmployee = async (name) => {
-    const newEmp = { id: `EMP-${Date.now()}`, name };
+    const newEmp = { id: `EMP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name };
     await supabase.from("employees").insert([newEmp]);
     setEmployees(e => [...e, newEmp].sort((a, b) => a.name.localeCompare(b.name)));
   };
@@ -710,7 +710,7 @@ export default function App() {
 
   const handleSave = async (form) => {
     if (adding) {
-      const newId = `EVT-${Date.now()}`;
+      const newId = `EVT-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const newEvent = { ...form, id: newId };
       await supabase.from("events").insert([newEvent]);
       setEvents(e => [...e, newEvent].sort((a, b) => a.startDate.localeCompare(b.startDate)));
