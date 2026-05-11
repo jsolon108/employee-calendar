@@ -384,7 +384,15 @@ function CalendarView({ events, onSelectEvent, branch }) {
   const toDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
   const eventsForDate = (dateStr) => {
-    const filtered = events.filter(ev => ev.startDate <= dateStr && ev.endDate >= dateStr);
+    const dow = new Date(dateStr + "T12:00:00").getDay(); // 0=Sun, 6=Sat
+    const filtered = events.filter(ev => {
+      if (ev.startDate <= dateStr && ev.endDate >= dateStr) {
+        // For multi-day events, skip weekends unless it's a single-day event
+        if (ev.startDate !== ev.endDate && (dow === 0 || dow === 6)) return false;
+        return true;
+      }
+      return false;
+    });
     return filtered.sort((a, b) => {
       const typeOrder = { "Company Event": 0, "Holiday": 1, "Training": 2, "Counter Day": 3, "Branch Event": 4 };
       const aTypeOrder = typeOrder[a.eventType] ?? 99;
