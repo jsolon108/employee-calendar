@@ -77,6 +77,17 @@ function formatTimeRange(start, end) {
   return `At ${formatTime(end)}`;
 }
 
+const TIME_OPTIONS = (() => {
+  const opts = [];
+  for (let h = 6; h <= 20; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      const value = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      opts.push({ value, label: formatTime(value) });
+    }
+  }
+  return opts;
+})();
+
 // ─── Login Screen ─────────────────────────────────────────────────────────────
 function LoginScreen({ onMicrosoftLogin, onLogin }) {
   const [showLocal, setShowLocal] = useState(false);
@@ -309,9 +320,15 @@ function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] })
           <div>
             <label style={labelStyle}>Time (optional — leave blank for all day)</label>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="time" step="900" value={form.startTime || ""} onChange={e => set("startTime", e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+              <select value={form.startTime || ""} onChange={e => set("startTime", e.target.value)} style={{ ...inputStyle, flex: 1 }}>
+                <option value="">—</option>
+                {TIME_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
               <span style={{ color: "#94A3B8", fontSize: 13 }}>to</span>
-              <input type="time" step="900" value={form.endTime || ""} onChange={e => set("endTime", e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+              <select value={form.endTime || ""} onChange={e => set("endTime", e.target.value)} style={{ ...inputStyle, flex: 1 }}>
+                <option value="">—</option>
+                {TIME_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
               {(form.startTime || form.endTime) && (
                 <button type="button" onClick={() => { set("startTime", ""); set("endTime", ""); }} style={{ padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#64748B", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Clear</button>
               )}
@@ -757,9 +774,10 @@ export default function App() {
   }, [events, branch, eventTypeFilter]);
 
   const handleSave = async (form) => {
+    const cleaned = { ...form, startTime: form.startTime || null, endTime: form.endTime || null };
     if (adding) {
       const newId = `EVT-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      const newEvent = { ...form, id: newId };
+      const newEvent = { ...cleaned, id: newId };
       const { error } = await supabase.from("events").insert([newEvent]);
       if (error) {
         alert(`Failed to save event: ${error.message}\n\nPlease try again or contact support.`);
@@ -768,12 +786,12 @@ export default function App() {
       setEvents(e => [...e, newEvent].sort((a, b) => a.startDate.localeCompare(b.startDate)));
       setAdding(false);
     } else {
-      const { error } = await supabase.from("events").update(form).eq("id", form.id);
+      const { error } = await supabase.from("events").update(cleaned).eq("id", cleaned.id);
       if (error) {
         alert(`Failed to update event: ${error.message}\n\nPlease try again or contact support.`);
         return;
       }
-      setEvents(e => e.map(ev => ev.id === form.id ? form : ev));
+      setEvents(e => e.map(ev => ev.id === cleaned.id ? cleaned : ev));
       setEditing(null);
     }
   };
