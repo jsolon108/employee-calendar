@@ -73,8 +73,8 @@ function formatTimeRange(start, end) {
     if (sPeriod === ePeriod) return `${sFmt.slice(0, -2)}–${eFmt}`;
     return `${sFmt}–${eFmt}`;
   }
-  if (start) return `After ${formatTime(start)}`;
-  return `Until ${formatTime(end)}`;
+  if (start) return `At ${formatTime(start)}`;
+  return `At ${formatTime(end)}`;
 }
 
 // ─── Login Screen ─────────────────────────────────────────────────────────────
@@ -309,14 +309,14 @@ function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] })
           <div>
             <label style={labelStyle}>Time (optional — leave blank for all day)</label>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="time" value={form.startTime || ""} onChange={e => set("startTime", e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+              <input type="time" step="900" value={form.startTime || ""} onChange={e => set("startTime", e.target.value)} style={{ ...inputStyle, flex: 1 }} />
               <span style={{ color: "#94A3B8", fontSize: 13 }}>to</span>
-              <input type="time" value={form.endTime || ""} onChange={e => set("endTime", e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+              <input type="time" step="900" value={form.endTime || ""} onChange={e => set("endTime", e.target.value)} style={{ ...inputStyle, flex: 1 }} />
               {(form.startTime || form.endTime) && (
                 <button type="button" onClick={() => { set("startTime", ""); set("endTime", ""); }} style={{ padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#64748B", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Clear</button>
               )}
             </div>
-            <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 4 }}>Fill both for a range (9–11am), only start for "after", only end for "until".</div>
+            <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 4 }}>Fill both for a range (9–11am), or just one for a single time (At 9am).</div>
           </div>
           <div>
             <label style={labelStyle}>Notes / Time of Arrival or Departure</label>
