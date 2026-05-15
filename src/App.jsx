@@ -57,6 +57,26 @@ function formatDate(d) {
   return new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+function formatTime(t) {
+  if (!t) return "";
+  const [h, m] = t.split(":").map(Number);
+  const period = h >= 12 ? "pm" : "am";
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return m === 0 ? `${hour12}${period}` : `${hour12}:${String(m).padStart(2, "0")}${period}`;
+}
+
+function formatTimeRange(start, end) {
+  if (!start && !end) return "";
+  if (start && end) {
+    const sFmt = formatTime(start), eFmt = formatTime(end);
+    const sPeriod = sFmt.slice(-2), ePeriod = eFmt.slice(-2);
+    if (sPeriod === ePeriod) return `${sFmt.slice(0, -2)}–${eFmt}`;
+    return `${sFmt}–${eFmt}`;
+  }
+  if (start) return `After ${formatTime(start)}`;
+  return `Until ${formatTime(end)}`;
+}
+
 // ─── Login Screen ─────────────────────────────────────────────────────────────
 function LoginScreen({ onMicrosoftLogin, onLogin }) {
   const [showLocal, setShowLocal] = useState(false);
@@ -177,7 +197,7 @@ function ManageEmployeesModal({ employees, onClose, onAdd, onDelete }) {
 
 // ─── Event Modal ──────────────────────────────────────────────────────────────
 function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] }) {
-  const blank = { employeeName: "", branch: "Farmingdale", eventType: "Out of Office", startDate: "", endDate: "", notes: "", visitingBranch: "" };
+  const blank = { employeeName: "", branch: "Farmingdale", eventType: "Out of Office", startDate: "", endDate: "", startTime: "", endTime: "", notes: "", visitingBranch: "" };
   const [form, setForm] = useState(event || blank);
   const [errors, setErrors] = useState({});
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: null })); };
@@ -287,6 +307,18 @@ function EventModal({ event, onClose, onSave, onDelete, isNew, employees = [] })
             {errors.endDate && <div style={errStyle}>⚠ {errors.endDate}</div>}
           </div>
           <div>
+            <label style={labelStyle}>Time (optional — leave blank for all day)</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <input type="time" value={form.startTime || ""} onChange={e => set("startTime", e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+              <span style={{ color: "#94A3B8", fontSize: 13 }}>to</span>
+              <input type="time" value={form.endTime || ""} onChange={e => set("endTime", e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+              {(form.startTime || form.endTime) && (
+                <button type="button" onClick={() => { set("startTime", ""); set("endTime", ""); }} style={{ padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#64748B", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Clear</button>
+              )}
+            </div>
+            <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 4 }}>Fill both for a range (9–11am), only start for "after", only end for "until".</div>
+          </div>
+          <div>
             <label style={labelStyle}>Notes / Time of Arrival or Departure</label>
             <textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={3} placeholder="Any additional notes..." style={{ ...inputStyle, resize: "vertical" }} />
           </div>
@@ -338,6 +370,12 @@ function DetailModal({ event: ev, onClose, onEdit, canEdit }) {
               <div style={{ fontSize: 13, color: "#0F172A", fontWeight: 600 }}>{formatDate(ev.endDate)}</div>
             </div>
           </div>
+          {(ev.startTime || ev.endTime) && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 11, color: "#94A3B8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Time</div>
+              <div style={{ fontSize: 13, color: "#0F172A", fontWeight: 600 }}>{formatTimeRange(ev.startTime, ev.endTime)}</div>
+            </div>
+          )}
           {ev.visitingBranch && (
             <div style={{ padding: "10px 14px", background: "#F0FDFA", borderRadius: 8, fontSize: 13, color: "#0F766E", marginBottom: 12, fontWeight: 600 }}>
               🔄 Working at: {ev.visitingBranch}
@@ -420,10 +458,12 @@ function CalendarView({ events, onSelectEvent, branch }) {
     const isGroupEvent = ev.branch === "New York" || ev.branch === "Connecticut";
     const cfg = isCompanyWide ? EVENT_TYPE_CONFIG[ev.eventType] : isVisiting ? EVENT_TYPE_CONFIG["Working at Another Branch"] : branchCfg;
     const stateLabel = BRANCH_STATE[ev.branch] ? ` · ${BRANCH_STATE[ev.branch]}` : "";
+    const timeStr = formatTimeRange(ev.startTime, ev.endTime);
     return (
       <button onClick={() => onSelectEvent(ev)} style={{ display: "block", width: "100%", textAlign: "left", padding: "3px 6px", borderRadius: 4, background: cfg.bg, color: cfg.color, border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", lineHeight: 1.4, overflow: "hidden", marginBottom: 2 }}>
         <div style={{ fontSize: 10, fontWeight: 700, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
           {isCompanyWide ? `📅 ${ev.employeeName}` : isGroupEvent ? `🗺 ${ev.branch}: ${ev.employeeName}` : isBranchEvent ? `📍 ${ev.branch}: ${ev.employeeName}` : isTraining ? `🎓 ${ev.employeeName}` : isCounterDay ? `🏪 ${ev.employeeName}` : isVisiting ? `🔄 ${ev.employeeName}` : `👤 ${ev.employeeName}`}
+          {timeStr && <span style={{ fontWeight: 800 }}> · {timeStr}</span>}
         </div>
         <div style={{ fontSize: 9, opacity: 0.75, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
           {ev.noTimeOff ? "🚫 No time off requests" : isTraining ? `${ev.branch} — Training` : isCounterDay ? `${ev.branch} — Counter Day` : isCompanyWide ? ev.eventType : isBranchEvent ? "Branch Event" : isGroupEvent ? `${ev.eventType} · All ${ev.branch} Branches` : isVisiting ? `${ev.branch} → ${ev.visitingBranch || "another branch"}` : `${ev.eventType}${stateLabel}`}
@@ -477,7 +517,7 @@ function CalendarView({ events, onSelectEvent, branch }) {
               <div key={i} style={{ minHeight: 200, background: cell === null ? "transparent" : cell.isToday ? "#F0F7FF" : "#FAFBFC", borderRadius: 8, border: cell === null ? "none" : cell.isToday ? "2px solid #3B82F6" : "1.5px solid #E2E8F0", padding: cell === null ? 0 : "6px 5px", boxSizing: "border-box", overflow: "hidden", position: "relative" }}>
                 {cell !== null && (
                   <>
-                    <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
+                    <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 4 }}>
                       <span style={{ width: 22, height: 22, borderRadius: "50%", background: cell.isToday ? "#3B82F6" : "transparent", color: cell.isToday ? "#fff" : "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: cell.isToday ? 800 : 500 }}>{cell.dayNum}</span>
                     </div>
                     {cell.events.slice(0, 20).map(ev => <EventChip key={ev.id + cell.dateStr} ev={ev} />)}
